@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model advertisement {
+  id             Int      @id @default(autoincrement())
+  car_id         Int
+  user_id        Int
+  location       String?  @db.VarChar(150)
+  status         String?  @db.VarChar(30)
+  description    String?  @db.Text
+  smoking        Boolean?
+  animal         Boolean?
+  max_km_per_day Int?
+  cars           cars     @relation(fields: [car_id], references: [id], onUpdate: Restrict, map: "fk_advertisement_car")
+  users          users    @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "fk_advertisement_user")
+
+  @@index([car_id], map: "fk_advertisement_car")
+  @@index([user_id], map: "fk_advertisement_user")
+}
+
+model cars {
+  id               Int             @id @default(autoincrement())
+  user_id          Int
+  make             String          @db.VarChar(50)
+  model            String          @db.VarChar(50)
+  prod_year        Int?
+  available        Boolean?        @default(true)
+  driveing_licence String?         @db.VarChar(20)
+  pictures         String?         @db.Text
+  trunk_space      Int?
+  daily_rate       Decimal         @db.Decimal(10, 2)
+  deposit          Decimal?        @db.Decimal(10, 2)
+  licence_plate    String          @unique(map: "licence_plate") @db.VarChar(20)
+  fuel_type        String?         @db.VarChar(30)
+  doors_number     Int?
+  air_con          Boolean?
+  seats_number     Int?
+  gearbox_type     String?         @db.VarChar(30)
+  advertisement    advertisement[]
+  users            users           @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "fk_cars_user")
+  rental           rental[]
+
+  @@index([user_id], map: "fk_cars_user")
+}
+
+model rental {
+  id                              Int      @id @default(autoincrement())
+  car_id                          Int
+  from                            DateTime @db.Date
+  until                           DateTime @db.Date
+  lessor_id                       Int
+  customer_id                     Int
+  rental_price                    Decimal  @db.Decimal(10, 2)
+  pickup_location                 String?  @db.VarChar(150)
+  dropoff_location                String?  @db.VarChar(150)
+  cars                            cars     @relation(fields: [car_id], references: [id], onUpdate: Restrict, map: "fk_rental_car")
+  users_rental_customer_idTousers users    @relation("rental_customer_idTousers", fields: [customer_id], references: [id], onUpdate: Restrict, map: "fk_rental_customer")
+  users_rental_lessor_idTousers   users    @relation("rental_lessor_idTousers", fields: [lessor_id], references: [id], onUpdate: Restrict, map: "fk_rental_lessor")
+
+  @@index([car_id], map: "fk_rental_car")
+  @@index([customer_id], map: "fk_rental_customer")
+  @@index([lessor_id], map: "fk_rental_lessor")
+}
+
+model users {
+  id                               Int             @id @default(autoincrement())
+  name                             String          @db.VarChar(100)
+  age                              Int?
+  contact_email                    String          @unique(map: "contact_email") @db.VarChar(150)
+  contact_phoneNumber              String?         @db.VarChar(30)
+  advertisement                    advertisement[]
+  cars                             cars[]
+  rental_rental_customer_idTousers rental[]        @relation("rental_customer_idTousers")
+  rental_rental_lessor_idTousers   rental[]        @relation("rental_lessor_idTousers")
+}
