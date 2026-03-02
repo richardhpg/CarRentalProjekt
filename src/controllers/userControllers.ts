@@ -35,7 +35,9 @@ export const deleteUser = async (req: Request, res: Response) => {
         const id = Number(req.params)
 
         const deletedUser = await prisma.users.update({
-            
+            where:{
+                id:Number(id)
+            }
         })
     } catch (err: any) {
         res.status(500).json({ message: err.message })
