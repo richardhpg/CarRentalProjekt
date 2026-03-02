@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -74,6 +74,9 @@ model users {
   age                              Int?
   contact_email                    String          @unique(map: "contact_email") @db.VarChar(150)
   contact_phoneNumber              String?         @db.VarChar(30)
+  deleted                          Boolean         @default(false)
+  deletedAt                        DateTime        @default(now()) 
+  password                         String     
   advertisement                    advertisement[]
   cars                             cars[]
   rental_rental_customer_idTousers rental[]        @relation("rental_customer_idTousers")
