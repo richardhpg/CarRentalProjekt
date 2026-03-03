@@ -1,9 +1,10 @@
 import React from 'react'
 
 const Advertisements = () => {
+  
   return (
     <div>
-      {/* Megnyitott hirdetés */}
+      {/* felsorolt hírdetések */}
       <header>Advertisements</header>
     </div>
   )

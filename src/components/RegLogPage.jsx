@@ -1,9 +1,14 @@
+// RegLogPage.jsx
 import React, { useState } from 'react';
+import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const RegLogPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -12,12 +17,21 @@ const RegLogPage = () => {
     if (!password) newErrors.password = 'Password is required';
     else if (password.length < 6) newErrors.password = 'Password must be at least 6 characters';
 
+    // Hard codeolt ellenőrzés
+    const hardcodedEmail = 'teszt@email.com';
+    const hardcodedPassword = 'jelszo123';
+
+    if (email !== hardcodedEmail || password !== hardcodedPassword) {
+      newErrors.general = 'Hibás email vagy jelszó';
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
     } else {
-      // Proceed with login (e.g., API call)
-      alert(`Logging in with ${email}`);
-      setErrors({});
+      // Sikeres bejelentkezés
+      const userData = { name: 'Teszt Elek', email };
+      login(userData);
+      navigate('/');
     }
   };
 
@@ -28,19 +42,17 @@ const RegLogPage = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-              start your 14-day free trial
-            </a>
+          <p className="mt-2 text-center text-sm text-gray-600"> Or{' '}
+            <a href="#" className="font-medium text-blue-600 hover:text-blue-500"> start your 14-day free trial </a>
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {errors.general && (
+            <div className="text-red-600 text-sm text-center">{errors.general}</div>
+          )}
           <div className="rounded-md shadow-sm space-y-4">
             <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
+              <label htmlFor="email" className="sr-only">Email address</label>
               <input
                 id="email"
                 name="email"
