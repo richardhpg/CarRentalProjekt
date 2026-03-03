@@ -12,15 +12,17 @@ export const getUsers = async (req: Request, res: Response) => {
 }
 
 export const createUser = async (req: Request, res: Response) => {
+      return res.json(req.body)
     try {
-        const { name, age, contact_email, contact_phoneNumber } = req.body
+        const { name, age, contact_email, contact_phoneNumber, password } = req.body;
 
         const newUser = await prisma.users.create({
             data: {
                 name: name,
                 age: age,
                 contact_email: contact_email,
-                contact_phoneNumber: contact_phoneNumber
+                contact_phoneNumber: contact_phoneNumber,
+                password: password
             }
         })
 
@@ -32,13 +34,18 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
     try {
-        const id = Number(req.params)
+        const usedID = Number(req.params.id)
 
         const deletedUser = await prisma.users.update({
             where:{
-                id:Number(id)
+                id:usedID
+            },
+            data:{
+                deleted: true,
+                deletedAt: new Date()
             }
         })
+        res.status(200).json(deletedUser)
     } catch (err: any) {
         res.status(500).json({ message: err.message })
     }

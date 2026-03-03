@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "nodemon --exec node --loader ts-node/esm src/server.ts",
+    "dev": "nodemon --exec npx tsx src/server.ts",
     "lint": "eslint 'src/**/*.ts'"
   },
   "repository": {
@@ -33,6 +33,7 @@
     "prettier": "^3.8.1",
     "prisma": "^7.4.2",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {

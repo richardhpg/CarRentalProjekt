@@ -12,6 +12,6 @@ app.use('/api/items', itemRoutes);
 app.use('/api/users', userRoutes)
 
 // Global error handler (should be after routes)
-app.use(errorHandler);
+//app.use(errorHandler);
 
 export default app;

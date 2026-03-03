@@ -75,8 +75,8 @@ model users {
   contact_email                    String          @unique(map: "contact_email") @db.VarChar(150)
   contact_phoneNumber              String?         @db.VarChar(30)
   deleted                          Boolean         @default(false)
-  deletedAt                        DateTime        @default(now()) 
-  password                         String     
+  deletedAt                        DateTime?      
+  password                         String           @db.VarChar(30)
   advertisement                    advertisement[]
   cars                             cars[]
   rental_rental_customer_idTousers rental[]        @relation("rental_customer_idTousers")
