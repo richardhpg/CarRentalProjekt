@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Routes
 
-app.use('/api/items', itemRoutes);
+// app.use('/api/items', itemRoutes);
 app.use('/api/users', userRoutes);
 
 // Global error handler (should be after routes)
