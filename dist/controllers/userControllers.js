@@ -1,20 +1,17 @@
-import { prisma } from "../lib/prisma.js"
-import { Request, Response } from "express"
-
-export const getUsers = async (req: Request, res: Response) => {
+import { prisma } from "../lib/prisma.js";
+export const getUsers = async (req, res) => {
     try {
-        const users = await prisma.users.findMany({})
-        res.status(200).json(users)
-    } catch (err: any) {
-        res.status(500).json({ message: err.message })
+        const users = await prisma.users.findMany({});
+        res.status(200).json(users);
     }
-}
-
-export const createUser = async (req: Request, res: Response) => {
-    return res.json(req.body)
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+export const createUser = async (req, res) => {
+    return res.json(req.body);
     // try {
     //     const { name, age, contact_email, contact_phoneNumber, password } = req.body;
-
     //     const newUser = await prisma.users.create({
     //         data: {
     //             name: name,
@@ -24,28 +21,26 @@ export const createUser = async (req: Request, res: Response) => {
     //             password: password
     //         }
     //     })
-
     //     res.status(200).json(newUser)
     // } catch (err: any) {
     //     res.status(500).json({ message: err.message })
     // }
-}
-
-export const deleteUser = async (req: Request, res: Response) => {
+};
+export const deleteUser = async (req, res) => {
     try {
-        const usedID = Number(req.params.id)
-
+        const usedID = Number(req.params.id);
         const deletedUser = await prisma.users.update({
-            where:{
-                id:usedID
+            where: {
+                id: usedID
             },
-            data:{
+            data: {
                 deleted: true,
                 deletedAt: new Date()
             }
-        })
-        res.status(200).json(deletedUser)
-    } catch (err: any) {
-        res.status(500).json({ message: err.message })
+        });
+        res.status(200).json(deletedUser);
     }
-}
+    catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

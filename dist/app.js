@@ -1,18 +1,11 @@
 import express from 'express';
 import itemRoutes from './routes/itemRoutes.js';
-import { errorHandler } from './middlewares/errorHandler.js';
-import userRoutes from './routes/userRoutes.js' 
-
+import userRoutes from './routes/userRoutes.js';
 const app = express();
-
 app.use(express.json());
-
 // Routes
-
 app.use('/api/items', itemRoutes);
 app.use('/api/users', userRoutes);
-
 // Global error handler (should be after routes)
 //app.use(errorHandler);
-
 export default app;
