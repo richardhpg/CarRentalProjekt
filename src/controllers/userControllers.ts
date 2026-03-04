@@ -47,11 +47,11 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
     try {
-        const usedID = Number(req.params.id)
+        const userID = Number(req.params.id)
 
         const deletedUser = await prisma.users.update({
             where:{
-                id:usedID
+                id:userID
             },
             data:{
                 deleted: true,
@@ -59,6 +59,29 @@ export const deleteUser = async (req: Request, res: Response) => {
             }
         })
         res.status(200).json(deletedUser)
+    } catch (err: any) {
+        res.status(500).json({ message: err.message })
+    }
+}
+
+export const updateUser = async (req: Request, res: Response) => {
+    try {
+        const userID = Number(req.params.id)
+        const {name, age, contact_email, contact_phoneNumber, password} = req.body
+
+        const updatedUser = await prisma.users.update({
+            where:{
+                id:userID
+            },
+            data:{
+                name:name,
+                age:age,
+                contact_email:contact_email,
+                contact_phoneNumber:contact_phoneNumber,
+                password:password
+            }
+        })
+        res.status(200).json(updatedUser)
     } catch (err: any) {
         res.status(500).json({ message: err.message })
     }
