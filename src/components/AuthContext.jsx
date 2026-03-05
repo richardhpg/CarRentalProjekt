@@ -1,4 +1,3 @@
-// context/AuthContext.jsx
 import { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
@@ -17,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     setUser(userData);
     // login logika
-
+    
     // POST
     localStorage.setItem('user', JSON.stringify(userData));
   };

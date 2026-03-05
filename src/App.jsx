@@ -1,32 +1,28 @@
-import { useState } from 'react'
-import AdvertisementCard from './components/AdvertisementCard'
-import Advertisements from './components/Advertisements'
-import DefaultProfile from './components/DefaultProfile';
-import LessorProfile from './components/LessorProfile';
-import Main from './components/Main';
-import Menu from './components/Menu';
-import RegLogPage from './components/RegLogPage';
-import Search from './components/Search';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './components/AuthContext';
-
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import MainLayout from './layouts/MainLayout.jsx'
+import HomePage from './pages/HomePage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import RegisterPage from './pages/RegisterPage.jsx'
+import CarListingPage from './pages/CarListingPage.jsx'
+import CarDetailsPage from './pages/CarDetailsPage.jsx'
+import DashboardPage from './pages/DashboardPage.jsx'
+import AddCarPage from './pages/AddCarPage.jsx'
 
 function App() {
-
-
   return (
-    <>
-    <AuthProvider>
-       <Router>
-      <Menu/>
+    <BrowserRouter>
       <Routes>
-        <Route path='/' element={<Main/>}/>
-        <Route path='/kereses' element={<Search/>}/>
-        <Route path='/login' element={<RegLogPage/>}/>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/cars" element={<CarListingPage />} />
+          <Route path="/cars/:id" element={<CarDetailsPage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/add-car" element={<AddCarPage />} />
+        </Route>
       </Routes>
-    </Router>
-    </AuthProvider>
-    </>
+    </BrowserRouter>
   )
 }
 
