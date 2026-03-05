@@ -2,6 +2,7 @@ import express from 'express';
 import itemRoutes from './routes/itemRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import userRoutes from './routes/userRoutes.js' 
+import carRoutes from './routes/carRoutes.js'
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(express.json());
 
 // app.use('/api/items', itemRoutes);
 app.use('/api/users', userRoutes);
+app.use("/api/cars",carRoutes);
 
 // Global error handler (should be after routes)
 //app.use(errorHandler);
