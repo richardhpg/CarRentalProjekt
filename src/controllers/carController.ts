@@ -17,6 +17,9 @@ export const getCarById = async (req: Request, res: Response) => {
         const foundCar = await prisma.cars.findUnique({
             where: {
                 id: id
+            },
+            include:{
+                users:true
             }
         })
         res.status(200).json(foundCar)
