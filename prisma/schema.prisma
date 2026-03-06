@@ -17,6 +17,8 @@ model advertisement {
   smoking        Boolean?
   animal         Boolean?
   max_km_per_day Int?
+  deleted                          Boolean         @default(false)
+  deletedAt                        DateTime?      
   cars           cars     @relation(fields: [car_id], references: [id], onUpdate: Restrict, map: "fk_advertisement_car")
   users          users    @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "fk_advertisement_user")
 
@@ -42,6 +44,8 @@ model cars {
   air_con          Boolean?
   seats_number     Int?
   gearbox_type     String?         @db.VarChar(30)
+  deleted                          Boolean         @default(false)
+  deletedAt                        DateTime?      
   advertisement    advertisement[]
   users            users           @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "fk_cars_user")
   rental           rental[]
@@ -59,6 +63,8 @@ model rental {
   rental_price                    Decimal  @db.Decimal(10, 2)
   pickup_location                 String?  @db.VarChar(150)
   dropoff_location                String?  @db.VarChar(150)
+  deleted                          Boolean         @default(false)
+  deletedAt                        DateTime?      
   cars                            cars     @relation(fields: [car_id], references: [id], onUpdate: Restrict, map: "fk_rental_car")
   users_rental_customer_idTousers users    @relation("rental_customer_idTousers", fields: [customer_id], references: [id], onUpdate: Restrict, map: "fk_rental_customer")
   users_rental_lessor_idTousers   users    @relation("rental_lessor_idTousers", fields: [lessor_id], references: [id], onUpdate: Restrict, map: "fk_rental_lessor")

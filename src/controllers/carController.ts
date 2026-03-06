@@ -123,3 +123,23 @@ export const updateCar = async (req: Request, res: Response) => {
         res.status(500).json({ message: err.message })
     }
 }
+
+export const deleteCar = async (req:Request, res:Response) => {
+    try {
+        const id = Number(req.params.id)
+
+        const deletedCar = await prisma.cars.update({
+            where:{
+                id:id
+            },
+            data:{
+                deleted: true,
+                deletedAt: new Date()
+            }
+        })
+
+        res.status(200).json(deletedCar)
+    } catch (err: any) {
+        res.status(500).json({ message: err.message })
+    }
+}
