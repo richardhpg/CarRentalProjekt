@@ -1,4 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
+import { users } from '../mock/data.js';
 
 const AuthContext = createContext();
 
@@ -15,10 +16,50 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData) => {
     setUser(userData);
-    // login logika
-    
-    // POST
     localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const register = ({ name, email, password, phone, age }) => {
+    const existingUser = users.find(
+      (u) => u.email.toLowerCase() === email.trim().toLowerCase(),
+    );
+
+    if (existingUser) {
+      throw new Error('Email already exists');
+    }
+
+    const newUser = {
+      id: users.length ? Math.max(...users.map((u) => u.id)) + 1 : 1,
+      name: name.trim(),
+      age: age ? Number(age) : undefined,
+      email: email.trim(),
+      password,
+      contact_email: email.trim(),
+      contact_phoneNumber: phone || '',
+    };
+
+    // TODO: Replace with API call
+    // const response = await fetch('/api/register', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(newUser),
+    // });
+    // const data = await response.json();
+    // setUser(data.user);
+    users.push(newUser);
+    setUser({
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+    });
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+      }),
+    );
   };
 
   const logout = () => {
@@ -27,11 +68,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{
-         user,
-         login,
-         logout 
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        register,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

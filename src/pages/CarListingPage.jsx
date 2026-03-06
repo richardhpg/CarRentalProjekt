@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import CarGrid from '../components/CarGrid.jsx'
 import FilterSidebar from '../components/FilterSidebar.jsx'
 import { cars as allCars, advertisements } from '../mock/data.js'
@@ -9,10 +10,44 @@ function CarListingPage() {
   const [fuelType, setFuelType] = useState()
   const [gearbox, setGearbox] = useState()
   const [seats, setSeats] = useState()
+   const [location, setLocation] = useState()
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  useEffect(() => {
+    const initialLocation = searchParams.get('location')
+    if (initialLocation) {
+      setLocation(initialLocation)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 700)
     return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    if (location) {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('location', location)
+        return next
+      })
+    } else {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('location')
+        return next
+      })
+    }
+  }, [location, setSearchParams])
+
+  const adsByCarId = useMemo(() => {
+    // TODO: In the future, filtering will be done by the backend via API query params
+    const map = new Map()
+    advertisements.forEach((ad) => {
+      map.set(ad.car_id, ad)
+    })
+    return map
   }, [])
 
   const filteredCars = allCars.filter((car) => {
@@ -20,6 +55,12 @@ function CarListingPage() {
     if (fuelType && car.fuel_type !== fuelType) return false
     if (gearbox && car.gearbox_type !== gearbox) return false
     if (seats && car.seats_number < seats) return false
+
+    if (location) {
+      const ad = adsByCarId.get(car.id)
+      if (!ad || ad.location !== location) return false
+    }
+
     return true
   })
 
@@ -44,6 +85,8 @@ function CarListingPage() {
             onGearboxChange={setGearbox}
             seats={seats}
             onSeatsChange={setSeats}
+            location={location}
+            onLocationChange={setLocation}
           />
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-slate-500">

@@ -14,7 +14,7 @@ function HomePage() {
         <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 md:flex-row md:items-center">
           <div className="max-w-xl space-y-5">
             <span className="inline-flex items-center rounded-full bg-slate-800/80 px-3 py-1 text-xs font-medium text-slate-300 ring-1 ring-slate-700">
-              New · Seamless peer-to-peer car sharing
+              Új · Magánszemélytől magánszemélynek bérlés mód
             </span>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
               Rent unique cars
@@ -34,7 +34,7 @@ function HomePage() {
                 </Button>
               </Link>
               <Link to="/add-car">
-                <Button variant="secondary" className="border-slate-700 bg-slate-900/40 text-white">
+                <Button variant="secondary" className="border-slate-700 bg-slate-900/40 text-blue-600">
                   List your car
                 </Button>
               </Link>

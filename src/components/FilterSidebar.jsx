@@ -1,3 +1,5 @@
+import LocationFilter from './LocationFilter.jsx'
+
 function FilterSidebar({
   priceRange,
   onPriceChange,
@@ -7,11 +9,14 @@ function FilterSidebar({
   onGearboxChange,
   seats,
   onSeatsChange,
+  location,
+  onLocationChange,
 }) {
   return (
     <aside className="h-fit rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
       <h3 className="mb-3 text-sm font-semibold text-slate-900">Filters</h3>
       <div className="space-y-4 text-xs text-slate-600">
+        <LocationFilter value={location} onChange={onLocationChange} />
         <div>
           <p className="mb-2 font-medium text-slate-700">Price per day</p>
           <div className="flex items-center gap-2">
