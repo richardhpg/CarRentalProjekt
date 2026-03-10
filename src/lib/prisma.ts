@@ -24,7 +24,7 @@ const adapter = new PrismaMariaDb({
     port: Number(process.env.DATABASE_PORT) || 3306,
     password: process.env.DATABASE_PASSWORD,
     database: process.env.DATABASE_NAME,
-  
+    ssl: false
 });
 const prisma = new PrismaClient({ adapter });
 export { prisma };
