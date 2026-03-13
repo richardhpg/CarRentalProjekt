@@ -46,35 +46,33 @@ function Navbar() {
             <span className="text-sm font-semibold text-white">
               Rentify
             </span>
-            <span className="text-xs text-slate-400">Peer-to-peer rentals</span>
+            <span className="text-xs text-slate-400">Magánszemélytől - Magánszemélynek</span>
           </div>
         </Link>
 
-        
+
         <nav className="hidden items-center gap-1 md:flex">
-          {!user ? (<></>): (<>
-            <NavLink
+          <NavLink
             to="/cars"
             className={({ isActive }) =>
-              `${navLinkBase} ${
-                isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+              `${navLinkBase} ${isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
               }`
             }
           >
             Browse cars
           </NavLink>
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              `${navLinkBase} ${
-                isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
-              }`
-            }
-          >
-            Dashboard
-          </NavLink>
+          {!user ? (<></>) : (<>
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `${navLinkBase} ${isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+                }`
+              }
+            >
+              Dashboard
+            </NavLink>
           </>)}
-          
+
         </nav>
 
         <div className="flex items-center gap-3">

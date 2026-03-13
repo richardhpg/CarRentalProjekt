@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       contact_phoneNumber: phone || '',
     };
 
-    // TODO: Replace with API call
+    // TODO: Helyettesíteni API hivassal
     // const response = await fetch('/api/register', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
