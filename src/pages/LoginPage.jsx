@@ -39,11 +39,8 @@ function LoginPage() {
       return
     }
 
-    login({
-      id: matchedUser.id,
-      name: matchedUser.name,
-      email: matchedUser.email,
-    })
+    // A teljes mock user objektumot átadjuk, hogy a role mező is megmaradjon
+    login(matchedUser)
     navigate('/')
   }
 

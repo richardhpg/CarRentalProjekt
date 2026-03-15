@@ -61,17 +61,44 @@ function Navbar() {
           >
             Browse cars
           </NavLink>
-          {!user ? (<></>) : (<>
-            <NavLink
-              to="/dashboard"
-              className={({ isActive }) =>
-                `${navLinkBase} ${isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
-                }`
-              }
-            >
-              Dashboard
-            </NavLink>
-          </>)}
+          {!user ? null : (
+            <>
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `${navLinkBase} ${
+                    isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+                  }`
+                }
+              >
+                Dashboard
+              </NavLink>
+              {user.role === 'Admin' && (
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) =>
+                    `${navLinkBase} ${
+                      isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+                    }`
+                  }
+                >
+                  Admin Panel
+                </NavLink>
+              )}
+              {user.role === 'Owner' && (
+                <NavLink
+                  to="/owner"
+                  className={({ isActive }) =>
+                    `${navLinkBase} ${
+                      isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+                    }`
+                  }
+                >
+                  Owner Panel
+                </NavLink>
+              )}
+            </>
+          )}
 
         </nav>
 

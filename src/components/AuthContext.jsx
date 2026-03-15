@@ -15,8 +15,27 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    // userData tipikusan a mock users tömbből jön
+    // Biztonságból mindig a központi users tömbből vesszük a role-t,
+    // hogy ha bárhol rosszul jönne, akkor is konzisztens legyen.
+    const sourceUser =
+      users.find((u) => u.id === userData.id) ??
+      users.find(
+        (u) =>
+          u.email.toLowerCase() === userData.email?.trim().toLowerCase(),
+      );
+
+    const role = sourceUser?.role ?? userData.role ?? 'User';
+
+    const normalizedUser = {
+      id: sourceUser?.id ?? userData.id,
+      name: sourceUser?.name ?? userData.name,
+      email: sourceUser?.email ?? userData.email,
+      role,
+    };
+
+    setUser(normalizedUser);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
   };
 
   const register = ({ name, email, password, phone, age }) => {
@@ -36,30 +55,37 @@ export const AuthProvider = ({ children }) => {
       password,
       contact_email: email.trim(),
       contact_phoneNumber: phone || '',
+      role: 'User',
     };
 
-    // TODO: Helyettesíteni API hivassal
-    // const response = await fetch('/api/register', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(newUser),
-    // });
-    // const data = await response.json();
-    // setUser(data.user);
+    // TODO: Helyettesíteni API hívással (felhasználó regisztráció role mezővel)
+    // pl. POST /api/register
     users.push(newUser);
-    setUser({
+
+    const normalizedUser = {
       id: newUser.id,
       name: newUser.name,
       email: newUser.email,
+      role: newUser.role,
+    };
+
+    setUser(normalizedUser);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
+  };
+
+  const updateUserRole = (userId, newRole) => {
+    // TODO: Replace with API call to update user role
+    const targetUser = users.find((u) => u.id === userId);
+    if (targetUser) {
+      targetUser.role = newRole;
+    }
+
+    setUser((prev) => {
+      if (!prev || prev.id !== userId) return prev;
+      const updated = { ...prev, role: newRole };
+      localStorage.setItem('user', JSON.stringify(updated));
+      return updated;
     });
-    localStorage.setItem(
-      'user',
-      JSON.stringify({
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-      }),
-    );
   };
 
   const logout = () => {
@@ -74,6 +100,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         register,
+        updateUserRole,
       }}
     >
       {children}
