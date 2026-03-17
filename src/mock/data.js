@@ -7,6 +7,7 @@ export const users = [
     password: 'password123',
     contact_email: 'anna.kovacs@example.com',
     contact_phoneNumber: '+36 30 123 4567',
+    role: 'Owner',
   },
   {
     id: 2,
@@ -16,6 +17,7 @@ export const users = [
     password: 'password123',
     contact_email: 'martin.novak@example.com',
     contact_phoneNumber: '+36 20 555 1122',
+    role: 'Admin',
   },
   {
     id: 3,
@@ -25,6 +27,7 @@ export const users = [
     password: 'password123',
     contact_email: 'julia.szabo@example.com',
     contact_phoneNumber: '+36 70 998 7766',
+    role: 'Admin',
   },
   {
     id: 4,
@@ -34,6 +37,7 @@ export const users = [
     password: 'password123',
     contact_email: 'peter.horvath@example.com',
     contact_phoneNumber: '+36 30 765 4321',
+    role: 'Admin',
   },
   {
     id: 5,
@@ -43,6 +47,7 @@ export const users = [
     password: 'password123',
     contact_email: 'luca.nagy@example.com',
     contact_phoneNumber: '+36 30 222 3344',
+    role: 'User',
   },
   {
     id: 6,
@@ -52,6 +57,7 @@ export const users = [
     password: 'password123',
     contact_email: 'david.farkas@example.com',
     contact_phoneNumber: '+36 70 111 2233',
+    role: 'User',
   },
   {
     id: 7,
@@ -61,6 +67,7 @@ export const users = [
     password: 'password123',
     contact_email: 'sara.toth@example.com',
     contact_phoneNumber: '+36 20 444 5566',
+    role: 'User',
   },
   {
     id: 8,
@@ -70,6 +77,7 @@ export const users = [
     password: 'password123',
     contact_email: 'bence.varga@example.com',
     contact_phoneNumber: '+36 30 999 8877',
+    role: 'User',
   },
 ]
 

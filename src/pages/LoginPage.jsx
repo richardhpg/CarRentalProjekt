@@ -39,11 +39,8 @@ function LoginPage() {
       return
     }
 
-    login({
-      id: matchedUser.id,
-      name: matchedUser.name,
-      email: matchedUser.email,
-    })
+    // A teljes mock user objektumot átadjuk, hogy a role mező is megmaradjon
+    login(matchedUser)
     navigate('/')
   }
 
@@ -66,7 +63,7 @@ function LoginPage() {
           <Input
             label="Email"
             type="email"
-            placeholder="you@example.com"
+            placeholder="email címed@példa.com"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -86,7 +83,7 @@ function LoginPage() {
           </Button>
         </form>
         <p className="mt-4 text-center text-xs text-slate-500">
-          Don&apos;t have an account?{' '}
+          Don&apos;t have an account?
           <Link
             to="/register"
             className="font-semibold text-blue-600 hover:text-blue-500"
