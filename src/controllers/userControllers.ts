@@ -1,6 +1,5 @@
 import { prisma } from "../lib/prisma.js"
 import { Request, Response } from "express"
-import jwt from 'json-web-token';
 import bcrypt from "bcrypt";
 
 const SALT = 10
