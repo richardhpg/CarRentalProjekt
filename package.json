@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "init": "npm i && npx prisma generate && npm run dev",
     "start": "node dist/server.js",
     "dev": "nodemon --watch src --ext ts --exec npx tsx src/server.ts",
     "lint": "eslint 'src/**/*.ts'"
@@ -41,6 +42,7 @@
     "@prisma/adapter-mariadb": "^7.4.2",
     "@prisma/client": "^7.4.2",
     "bcrypt": "^6.0.0",
+    "experss": "^0.0.1-security",
     "json-web-token": "^3.2.0"
   }
 }

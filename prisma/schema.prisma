@@ -82,7 +82,7 @@ model users {
   contact_phoneNumber              String?         @db.VarChar(30)
   deleted                          Boolean         @default(false)
   deletedAt                        DateTime?
-  password                         String          @db.VarChar(30)
+  password                         String          
   advertisement                    advertisement[]
   cars                             cars[]
   rental_rental_customer_idTousers rental[]        @relation("rental_customer_idTousers")
