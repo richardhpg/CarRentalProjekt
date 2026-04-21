@@ -82,9 +82,22 @@ model users {
   contact_phoneNumber              String?         @db.VarChar(30)
   deleted                          Boolean         @default(false)
   deletedAt                        DateTime?
-  password                         String          @db.VarChar(30)
+  password                         String          
   advertisement                    advertisement[]
   cars                             cars[]
   rental_rental_customer_idTousers rental[]        @relation("rental_customer_idTousers")
   rental_rental_lessor_idTousers   rental[]        @relation("rental_lessor_idTousers")
+
+  refreshTokens refresh_token[]
+}
+
+model refresh_token {
+  id         Int      @id @default(autoincrement())
+  token      String   @unique
+  user_id    Int
+  revoked    Boolean  @default(false)
+  expiresAt  DateTime 
+  createdAt  DateTime @default(now())
+
+  users users @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

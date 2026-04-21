@@ -1,9 +1,7 @@
 import { prisma } from "../lib/prisma.js"
 import { Request, Response } from "express"
-import jwt from 'json-web-token';
-import bcrypt from "bcrypt";
+import bcrypt from "bcrypt"
 
-const SALT = 10
 
 export const getUsers = async (req: Request, res: Response) => {
     try {
@@ -25,28 +23,6 @@ export const getUserById = async (req:Request, res:Response) => {
         })
         res.status(200).json(foundUser)
     } catch (err:any) {
-        res.status(err.status).json({ message: err.message })
-    }
-}
-
-export const createUser = async (req: Request, res: Response) => {
-    try {
-        const { name, age, contact_email, contact_phoneNumber, password } = req.body;
-
-        const passwordHash = await bcrypt.hash(password, SALT)
-
-        const newUser = await prisma.users.create({
-            data: {
-                name: name,
-                age: age,
-                contact_email: contact_email,
-                contact_phoneNumber: contact_phoneNumber,
-                password: passwordHash
-            }
-        })
-
-        res.status(200).json(newUser)
-    } catch (err: any) {
         res.status(err.status).json({ message: err.message })
     }
 }
@@ -75,6 +51,12 @@ export const updateUser = async (req: Request, res: Response) => {
         const userID = Number(req.params.id)
         const {name, age, contact_email, contact_phoneNumber, password} = req.body
 
+        let hashedPassword
+
+        if (password) {
+          hashedPassword  = await bcrypt.hash(password, 10);
+        }   
+
         const updatedUser = await prisma.users.update({
             where:{
                 id:userID
@@ -84,7 +66,7 @@ export const updateUser = async (req: Request, res: Response) => {
                 age:age,
                 contact_email:contact_email,
                 contact_phoneNumber:contact_phoneNumber,
-                password:password
+                password: hashedPassword
             }
         })
         res.status(200).json(updatedUser)

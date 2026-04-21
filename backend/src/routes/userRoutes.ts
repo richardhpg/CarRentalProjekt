@@ -1,7 +1,6 @@
 import {
     getUsers,
     getUserById,
-    createUser,
     deleteUser,
     updateUser
 } from "../controllers/userControllers.js"
@@ -11,7 +10,6 @@ const router = Router();
 
 router.get("/",getUsers)
 router.get("/:id",getUserById)
-router.post("/", createUser)
 router.patch("/:id/delete",deleteUser)
 router.patch("/:id/update",updateUser)
 

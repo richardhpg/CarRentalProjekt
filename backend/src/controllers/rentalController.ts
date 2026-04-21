@@ -1,4 +1,3 @@
-import { carsOrderByRelevanceFieldEnum } from "../generated/prisma/internal/prismaNamespace.js"
 import { prisma } from "../lib/prisma.js"
 import { Request, Response } from "express"
 
