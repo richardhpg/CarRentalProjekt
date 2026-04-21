@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import itemRoutes from './routes/itemRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import userRoutes from './routes/userRoutes.js' 
@@ -9,6 +10,7 @@ import authRoutes from './routes/authRoutes.js'
  
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 // Routes
