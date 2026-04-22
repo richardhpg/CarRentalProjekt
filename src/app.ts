@@ -7,6 +7,7 @@ import carRoutes from './routes/carRoutes.js'
 import adsRoutes from './routes/adsRoutes.js'
 import rentalRoutes from './routes/rentalRoutes.js'
 import authRoutes from './routes/authRoutes.js'
+import refreshToken from "./middlewares/userValidator.js"
  
 const app = express();
 
@@ -16,8 +17,8 @@ app.use(express.json());
 // Routes
 
 // app.use('/api/items', itemRoutes);
-app.use('/api/users', userRoutes);
-app.use("/api/cars",carRoutes);
+app.use('/api/users', refreshToken, userRoutes);
+app.use("/api/cars", refreshToken, carRoutes);
 app.use("/api/advertisements", adsRoutes)
 app.use("/api/rentals", rentalRoutes)
 app.use("/api/account", authRoutes)
