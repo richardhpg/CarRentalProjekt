@@ -1,3 +1,4 @@
+import { error } from "node:console"
 import { prisma } from "../lib/prisma.js"
 import { Request, Response } from "express"
 
@@ -69,9 +70,9 @@ export const createCar = async (req: Request, res: Response) => {
                 gearbox_type:gearbox_type
             }
         })
-        res.status(200).json(newCar)
+        res.status(200).json({message: "Car created successfully!"})
     } catch (err: any) {
-        res.status(500).json({ message: err.message })
+        res.status(404).json({message: err.message})
     }
 }
 

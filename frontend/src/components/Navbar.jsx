@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from './AuthContext.jsx'
+import { useNavigate } from 'react-router-dom'
 
 const navLinkBase =
   'text-sm font-medium transition-colors hover:text-white/80 px-3 py-2 rounded-full'
@@ -10,6 +11,7 @@ function Navbar() {
   const { user, logout } = useAuth()
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const profileMenuRef = useRef(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -148,8 +150,9 @@ function Navbar() {
               )}
             </div>
           )}
-          <Link
-            to={location.pathname === '/add-car' ? '/cars' : '/add-car'}
+
+          <Link 
+          to = { !user ? "/login" : location.pathname === '/add-car' ? '/cars' : '/add-car' }
             className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/40 transition hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg"
           >
             {location.pathname === '/add-car' ? 'Browse cars' : 'List your car'}

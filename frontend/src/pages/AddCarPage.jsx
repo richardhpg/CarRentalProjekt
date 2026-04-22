@@ -1,27 +1,37 @@
 import Input from '../components/Input.jsx'
 import Button from '../components/Button.jsx'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useAuth } from '../components/AuthContext.jsx'
+import { useNavigate } from 'react-router-dom'
 
 function AddCarPage() {
 
   const [airchecked, setAirChecked] = useState(false)
   const [availableChacked, setAvailableChecked] = useState(false)
+  const {user} = useAuth()
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/cars")
+    .then(res => res.json())
+    .then(data => console.log(data))
+  },[])
 
   const [formTemplate, setFormTemplate] = useState({
-    user_id: -1,
+    user_id: user ? user.id : -1,
     make: "",/**/
     model: "",/**/
     prod_year: 0, /**/
-    available: 0, /**/
     driving_licence: "",/**/
     pictures: "",/**/
+    available: true,
     trunk_space: 0, 
     daily_rate: 0, /**/
     deposit: 0,/**/
     licence_plate: "",/**/
     fuel_type: "",/**/
     doors_number: 0, /**/
-    air_con: 0,/**/
+    air_con: false,/**/
     seats_number: 0,/**/
     gearbox_type: "",/**/
 
@@ -34,9 +44,20 @@ function AddCarPage() {
   }
 
   const submit = async (e) => {
+    if (!user) {
+      navigate('/login')
+      return;
+     }
      e.preventDefault();
-     formTemplate.air_con = airchecked ? 1 : 0 
-     formTemplate.available = availableChacked ? 1 : 0 
+     formTemplate.air_con = airchecked ? true : false 
+     formTemplate.available = availableChacked ? true : false
+      formTemplate.prod_year = parseInt(formTemplate.prod_year)
+      formTemplate.trunk_space = parseInt(formTemplate.trunk_space)
+      formTemplate.daily_rate = parseFloat(formTemplate.daily_rate)
+      formTemplate.deposit = parseFloat(formTemplate.deposit)
+      formTemplate.doors_number = parseInt(formTemplate.doors_number)
+      formTemplate.seats_number = parseInt(formTemplate.seats_number)
+
     const request = await fetch("http://localhost:3000/api/cars/", {
       method: "POST",
       headers: {
@@ -44,6 +65,9 @@ function AddCarPage() {
       },
       body: JSON.stringify(formTemplate)
     })
+
+    const response = await request.json()
+    console.log(response.message)
   }
 
 
@@ -65,6 +89,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Márka</span>
               <input
+                onChange={writeData}
                 id="make"
                 type="text"
                 placeholder="Tesla"
@@ -74,6 +99,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Model</span>
               <input
+                onChange={writeData}
                 id="model"
                 type="text"
                 placeholder="Model 3"
@@ -83,6 +109,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Production year</span>
               <input
+                onChange={writeData}
                 id="prod_year"
                 type="text"
                 placeholder="2022"
@@ -92,6 +119,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Fuel type</span>
               <input
+                onChange={writeData}
                 id="fuel_type"
                 type="text"
                 placeholder="Electirc"
@@ -101,6 +129,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Gearbox type</span>
               <input
+                onChange={writeData}
                 id="gearbox_type"
                 type="text"
                 placeholder="Automatic"
@@ -110,6 +139,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Number of seats</span>
               <input
+                onChange={writeData}
                 id="seats_number"
                 type="text"
                 placeholder="5"
@@ -119,6 +149,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Trunk space</span>
               <input
+                onChange={writeData}
                 id="trunk_space"
                 type="number"
                 placeholder="5"
@@ -128,6 +159,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Doors number</span>
               <input
+                onChange={writeData}
                 id="doors_number"
                 type="text"
                 placeholder="4"
@@ -137,6 +169,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Driveing Licence (category)</span>
               <input
+                onChange={writeData}
                 id="driving_licence"
                 type="text"
                 placeholder="B"
@@ -147,6 +180,7 @@ function AddCarPage() {
             {/* Checkboxok  */}
             <label className="flex items-center gap-2 text-sm">
               <input
+                onChange={writeData}
                 type="checkbox"
                 onClick={() => {setAirChecked(prev => !prev)}}
                 id="air_con"
@@ -154,21 +188,23 @@ function AddCarPage() {
               />
               <span className="font-medium text-slate-700">Air condition</span>
             </label>
-            <label className="flex items-center gap-2 text-sm">
+            {/* <label className="flex items-center gap-2 text-sm">
               <input
+                onChange={writeData}
                 type="checkbox"
                 onClick={() => {setAvailableChecked(prev => !prev)}}
                 id="available"
                 className="h-5 w-5 rounded-full border-slate-200 bg-white text-blue-500 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
               <span className="font-medium text-slate-700">Elérhető a közzététel pillanatától</span>
-            </label>
+            </label> */}
           </div>
           {/* Árazás/anyagi dolgok */}
           <div className="grid gap-4 md:grid-cols-3">
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Price per day (€)</span>
               <input
+                onChange={writeData}
                 id="daily_rate"
                 type="number"
                 placeholder="95"
@@ -178,6 +214,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">Deposit (€)</span>
               <input
+                onChange={writeData}
                 id="deposit"
                 type="number"
                 placeholder="500"
@@ -187,6 +224,7 @@ function AddCarPage() {
             <label className="flex flex-col gap-1 text-sm">
               <span className="font-medium text-slate-700">License plate</span>
               <input
+                onChange={writeData}
                 id="licence_plate"
                 type="text"
                 placeholder="AO IR 526"
@@ -197,6 +235,7 @@ function AddCarPage() {
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-slate-700">Pictures</span>
             <input
+              onChange={writeData}
               id="pictures"
               type="text"
               placeholder="https://kep.img"

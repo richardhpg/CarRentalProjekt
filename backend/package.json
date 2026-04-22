@@ -25,6 +25,7 @@
   "homepage": "https://github.com/richardhpg/CarRentalProjekt#readme",
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "^25.3.3",
     "dotenv": "^17.3.1",
