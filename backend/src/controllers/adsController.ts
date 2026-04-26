@@ -3,7 +3,9 @@ import { Request, Response } from "express"
 
 export const getAds = async (req: Request, res: Response) => {
     try {
+        const carId = req.query.carId ? Number(req.query.carId) : undefined
         const advertisements = await prisma.advertisement.findMany({
+            where: carId ? { car_id: carId } : undefined,
             include: {
                 cars: true,
                 users: true

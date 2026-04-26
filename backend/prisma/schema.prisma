@@ -8,19 +8,20 @@ datasource db {
 }
 
 model advertisement {
-  id             Int       @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   car_id         Int
   user_id        Int
-  location       String?   @db.VarChar(150)
-  status         String?   @db.VarChar(30)
-  description    String?   @db.Text
+  location       String?         @db.VarChar(150)
+  status         String?         @db.VarChar(30)
+  description    String?         @db.Text
   smoking        Boolean?
   animal         Boolean?
   max_km_per_day Int?
-  deleted        Boolean   @default(false)
+  deleted        Boolean         @default(false)
   deletedAt      DateTime?
-  cars           cars      @relation(fields: [car_id], references: [id], onUpdate: Restrict, map: "fk_advertisement_car")
-  users          users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "fk_advertisement_user")
+  cars           cars            @relation(fields: [car_id], references: [id], onUpdate: Restrict, map: "fk_advertisement_car")
+  users          users           @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "fk_advertisement_user")
+  notifications  notifications[]
 
   @@index([car_id], map: "fk_advertisement_car")
   @@index([user_id], map: "fk_advertisement_user")
@@ -75,29 +76,36 @@ model rental {
 }
 
 model users {
-  id                               Int             @id @default(autoincrement())
-  name                             String          @db.VarChar(100)
-  age                              Int?
-  contact_email                    String          @unique(map: "contact_email") @db.VarChar(150)
-  contact_phoneNumber              String?         @db.VarChar(30)
-  deleted                          Boolean         @default(false)
-  deletedAt                        DateTime?
-  password                         String          
-  advertisement                    advertisement[]
-  cars                             cars[]
-  rental_rental_customer_idTousers rental[]        @relation("rental_customer_idTousers")
-  rental_rental_lessor_idTousers   rental[]        @relation("rental_lessor_idTousers")
-
-  refreshTokens refresh_token[]
+  id                                           Int             @id @default(autoincrement())
+  name                                         String          @db.VarChar(100)
+  age                                          Int?
+  contact_email                                String          @unique(map: "contact_email") @db.VarChar(150)
+  contact_phoneNumber                          String?         @db.VarChar(30)
+  deleted                                      Boolean         @default(false)
+  deletedAt                                    DateTime?
+  password                                     String          @db.VarChar(30)
+  role                                         String?         @default("User") @db.VarChar(30)
+  advertisement                                advertisement[]
+  cars                                         cars[]
+  notifications_notifications_seller_idTousers notifications[] @relation("notifications_seller_idTousers")
+  notifications_notifications_buyer_idTousers  notifications[] @relation("notifications_buyer_idTousers")
+  rental_rental_customer_idTousers             rental[]        @relation("rental_customer_idTousers")
+  rental_rental_lessor_idTousers               rental[]        @relation("rental_lessor_idTousers")
 }
 
-model refresh_token {
-  id         Int      @id @default(autoincrement())
-  token      String   @unique
-  user_id    Int
-  revoked    Boolean  @default(false)
-  expiresAt  DateTime 
-  createdAt  DateTime @default(now())
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model notifications {
+  id                                   Int            @id @default(autoincrement())
+  seller_id                            Int
+  buyer_id                             Int
+  advertisement_id                     Int?
+  status                               String         @db.VarChar(50)
+  title                                String         @db.VarChar(80)
+  users_notifications_seller_idTousers users          @relation("notifications_seller_idTousers", fields: [seller_id], references: [id], onUpdate: Restrict, map: "notifications_ibfk_1")
+  users_notifications_buyer_idTousers  users          @relation("notifications_buyer_idTousers", fields: [buyer_id], references: [id], onUpdate: Restrict, map: "notifications_ibfk_2")
+  advertisement                        advertisement? @relation(fields: [advertisement_id], references: [id], onUpdate: Restrict, map: "notifications_ibfk_3")
 
-  users users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@index([advertisement_id], map: "idx_advertisement_id")
+  @@index([buyer_id], map: "idx_buyer_id")
+  @@index([seller_id], map: "idx_seller_id")
 }

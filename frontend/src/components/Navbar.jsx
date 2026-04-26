@@ -1,7 +1,7 @@
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from './AuthContext.jsx'
-import { useNavigate } from 'react-router-dom'
+import NotificationCard from './NotificationCard.jsx'
 
 const navLinkBase =
   'text-sm font-medium transition-colors hover:text-white/80 px-3 py-2 rounded-full'
@@ -10,27 +10,11 @@ function Navbar() {
   const location = useLocation()
   const { user, logout } = useAuth()
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-  const profileMenuRef = useRef(null)
-  const navigate = useNavigate()
-
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target)
-      ) {
-        setIsProfileMenuOpen(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleOutsideClick)
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick)
-    }
-  }, [])
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false)
 
   useEffect(() => {
     setIsProfileMenuOpen(false)
+    setIsNotificationMenuOpen(false)
   }, [location.pathname])
 
   const userInitial = user?.name?.charAt(0)?.toUpperCase() ?? 'U'
@@ -113,42 +97,101 @@ function Navbar() {
               Log in
             </Link>
           ) : (
-            <div className="relative" ref={profileMenuRef}>
+            <>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false)
+                    setIsNotificationMenuOpen((prev) => !prev)
+                  }}
+                  className="inline-flex items-center justify-center rounded-full border border-slate-700/80 bg-slate-800/80 p-2 text-slate-200 transition hover:bg-slate-700/80"
+                  aria-label="Ertesitesek"
+                  aria-expanded={isNotificationMenuOpen}
+                  aria-haspopup="dialog"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    className="h-5 w-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14.857 17H9.143m8.571 0H20l-1.714-1.714V10.57a6.286 6.286 0 10-12.572 0v4.715L4 17h2.286m8.571 0a2.857 2.857 0 11-5.714 0"
+                    />
+                  </svg>
+                </button>
+
+                {isNotificationMenuOpen && (
+                  <div className="fixed left-3 right-3 top-24 z-40 max-h-[70vh] overflow-y-auto rounded-2xl border border-slate-700/80 bg-slate-800/95 p-3 shadow-lg shadow-slate-900/40 md:absolute md:left-auto md:right-0 md:top-12 md:mt-2 md:w-96">
+                    <div className="mb-3 flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-white">
+                        Ertesitesek
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setIsNotificationMenuOpen(false)}
+                        className="text-xs text-slate-300 hover:text-white"
+                      >
+                        Bezár
+                      </button>
+                    </div>
+                    <NotificationCard userId={user.id} />
+                  </div>
+                )}
+              </div>
+
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                  className="hidden items-center gap-2 rounded-full border border-slate-700/80 bg-slate-800/80 px-2 py-1 text-slate-200 transition hover:bg-slate-700/80 md:inline-flex"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+                    {userInitial}
+                  </span>
+                  <span className="max-w-[9rem] truncate pr-1 text-sm font-medium text-white">
+                    {user.name}
+                  </span>
+                </button>
+
+                {isProfileMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-800/95 py-1 shadow-lg shadow-slate-900/40">
+                    <button
+                      type="button"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                      className="block w-full px-4 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700/70"
+                    >
+                      Profil kezelése
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false)
+                        logout()
+                      }}
+                      className="block w-full px-4 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700/70"
+                    >
+                      Kijelentkezés
+                    </button>
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
-                onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                className="hidden items-center gap-2 rounded-full border border-slate-700/80 bg-slate-800/80 px-2 py-1 text-slate-200 transition hover:bg-slate-700/80 md:inline-flex"
+                onClick={() => {
+                  setIsProfileMenuOpen(false)
+                  logout()
+                }}
+                className="inline-flex rounded-full border border-slate-700/80 bg-slate-800/80 px-3 py-2 text-xs font-medium text-slate-200 transition hover:bg-slate-700/80 md:hidden"
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                  {userInitial}
-                </span>
-                <span className="max-w-[9rem] truncate pr-1 text-sm font-medium text-white">
-                  {user.name}
-                </span>
+                Kijelentkezes
               </button>
-
-              {isProfileMenuOpen && (
-                <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-800/95 py-1 shadow-lg shadow-slate-900/40">
-                  <button
-                    type="button"
-                    onClick={() => setIsProfileMenuOpen(false)}
-                    className="block w-full px-4 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700/70"
-                  >
-                    Profil kezelése
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsProfileMenuOpen(false)
-                      logout()
-                    }}
-                    className="block w-full px-4 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700/70"
-                  >
-                    Kijelentkezés
-                  </button>
-                </div>
-              )}
-            </div>
+            </>
           )}
 
           <Link 
@@ -164,4 +207,3 @@ function Navbar() {
 }
 
 export default Navbar
-

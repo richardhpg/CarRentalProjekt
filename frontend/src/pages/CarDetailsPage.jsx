@@ -4,12 +4,19 @@ import Button from '../components/Button.jsx'
 import Modal from '../components/Modal.jsx'
 import { useState } from 'react'
 import { CAR_PLACEHOLDER_IMAGE } from '../utils/constants.js'
+import { useAuth } from '../components/AuthContext.jsx'
+
+const API_BASE_URL = 'http://localhost:3000'
 
 function CarDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [openModal, setOpenModal] = useState(false)
   const [imgError, setImgError] = useState(false)
+  const [requestMessage, setRequestMessage] = useState('')
+  const [requestError, setRequestError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const car = cars.find((c) => c.id === Number(id))
   const ad = advertisements.find((a) => a.car_id === Number(id))
@@ -28,6 +35,53 @@ function CarDetailsPage() {
 
   const image = car.pictures?.[0]
   const src = imgError || !image ? CAR_PLACEHOLDER_IMAGE : image
+
+  const handleRentIntent = async () => {
+    if (!user) {
+      setOpenModal(true)
+      return
+    }
+
+    if (!ad?.id) {
+      setRequestError('Ehhez az autohoz nem talalhato aktiv hirdetes.')
+      setRequestMessage('')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      setRequestError('')
+      setRequestMessage('')
+
+      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          buyer_id: user.id,
+          advertisement_id: ad.id,
+          title: `${user.name} berlesi szandekot kuldott a(z) ${car.make} ${car.model} autora.`,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data?.message || 'A berlesi szandek kuldese sikertelen.')
+      }
+
+      setRequestMessage('A berlesi szandek elkuldve. Varj az elado visszajelzesere.')
+    } catch (err) {
+      setRequestError(
+        err instanceof Error
+          ? err.message
+          : 'Hiba tortent a berlesi szandek kuldese kozben.'
+      )
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="bg-slate-50 py-8">
@@ -147,10 +201,17 @@ function CarDetailsPage() {
               </div>
               <Button
                 className="mt-4 w-full"
-                onClick={() => setOpenModal(true)}
+                onClick={handleRentIntent}
+                disabled={isSubmitting}
               >
-                Rent this car
+                {isSubmitting ? 'Kuldes...' : 'Rent this car'}
               </Button>
+              {requestMessage ? (
+                <p className="mt-2 text-xs text-green-600">{requestMessage}</p>
+              ) : null}
+              {requestError ? (
+                <p className="mt-2 text-xs text-red-600">{requestError}</p>
+              ) : null}
             </div>
 
             {owner && (
