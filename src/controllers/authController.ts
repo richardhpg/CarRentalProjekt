@@ -39,7 +39,7 @@ export const login = async (req: Request, res: Response) => {
         })
 
         if (!user) {
-            return res.status(400).json({ message: "Nem megfelelő e-mail vagy jelszo" })
+            return res.status(400).json({ message: "Nem megfelelő e-mail vagy jelszó" })
         }
         let match = await bcrypt.compare(password, user.password);
         if (!match) {
@@ -60,14 +60,9 @@ export const login = async (req: Request, res: Response) => {
             }
         })
 
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: false,
-            path: '/refresh', 
-            maxAge: 7 * 24 * 60 * 60 * 1000 
-        });
-
-        return res.status(200).json(accessToken)
+        res.setHeader('Set-Cookie', `refreshToken=${refreshToken}; HttpOnly; Path=/; SameSite=Lax`);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        return res.json({ accessToken });
     }
     catch (err: any) {
         res.status(500).json(err.message)

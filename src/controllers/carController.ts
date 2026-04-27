@@ -1,9 +1,10 @@
 import { prisma } from "../lib/prisma.js"
 import { Request, Response } from "express"
 
-export const getCars = async (req: Request, res: Response) => {
+export const getCars = async (req: any, res: Response) => {
     try {
         const cars = await prisma.cars.findMany({})
+        console.log(req.refreshToken);
         res.status(200).json(cars)
     } catch (err: any) {
         res.status(500).json({ message: err.message })
