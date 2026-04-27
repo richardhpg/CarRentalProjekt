@@ -3,9 +3,7 @@ import { Request, Response } from "express"
 
 export const getAds = async (req: Request, res: Response) => {
     try {
-        const carId = req.query.carId ? Number(req.query.carId) : undefined
         const advertisements = await prisma.advertisement.findMany({
-            where: carId ? { car_id: carId } : undefined,
             include: {
                 cars: true,
                 users: true
@@ -24,6 +22,25 @@ export const getAdsById = async (req: Request, res: Response) => {
         const advertisement = await prisma.advertisement.findUnique({
             where: {
                 id: id
+            },
+            include: {
+                cars: true,
+                users: true
+            }
+        })
+        res.status(200).json(advertisement)
+    } catch (err: any) {
+        res.status(500).json(err.message)
+    }
+}
+
+export const getAdsByCarId = async (req: Request, res: Response) => {
+    try {
+        const id = Number(req.params.id)
+
+        const advertisement = await prisma.advertisement.findUnique({
+            where: {
+                car_id: id
             },
             include: {
                 cars: true,

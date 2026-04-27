@@ -1,8 +1,8 @@
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, data } from 'react-router-dom'
 import { cars, advertisements, users } from '../mock/data.js'
 import Button from '../components/Button.jsx'
 import Modal from '../components/Modal.jsx'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CAR_PLACEHOLDER_IMAGE } from '../utils/constants.js'
 import { useAuth } from '../components/AuthContext.jsx'
 
@@ -17,8 +17,19 @@ function CarDetailsPage() {
   const [requestMessage, setRequestMessage] = useState('')
   const [requestError, setRequestError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [car, setCar] = useState({})
+  const [advertisements, setAdvertisements] = useState([])
 
-  const car = cars.find((c) => c.id === Number(id))
+  useEffect(() => {
+    fetch(`http://localhost:3000/api/cars/${id}`)
+    .then(res => res.json())
+    .then(data => setCar(data))
+    .catch(err => console.log("Cars fetch err: ", err))
+
+    fetch("")
+  }, [])
+
+  //const car = cars.find((c) => c.id === Number(id))
   const ad = advertisements.find((a) => a.car_id === Number(id))
   const owner = car ? users.find((u) => u.id === car.user_id) : undefined
 

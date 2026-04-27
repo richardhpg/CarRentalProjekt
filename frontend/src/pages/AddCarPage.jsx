@@ -54,9 +54,9 @@ function AddCarPage() {
      if (!formTemplate.pictures) {
       formTemplate.pictures ="car-placeholder.svg"
      }
-     formTemplate.user_id = user.id
-     formTemplate.air_con = airchecked ? true : false 
-     formTemplate.available = availableChacked ? true : false
+      formTemplate.user_id = user.id
+      formTemplate.air_con = airchecked ? true : false 
+      formTemplate.available = availableChacked ? true : false
       formTemplate.prod_year = parseInt(formTemplate.prod_year)
       formTemplate.trunk_space = parseInt(formTemplate.trunk_space)
       formTemplate.daily_rate = parseFloat(formTemplate.daily_rate)

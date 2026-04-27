@@ -1,10 +1,10 @@
-import { error } from "node:console"
 import { prisma } from "../lib/prisma.js"
 import { Request, Response } from "express"
 
-export const getCars = async (req: Request, res: Response) => {
+export const getCars = async (req: any, res: Response) => {
     try {
         const cars = await prisma.cars.findMany({})
+        console.log(req.refreshToken);
         res.status(200).json(cars)
     } catch (err: any) {
         res.status(500).json({ message: err.message })
@@ -70,9 +70,9 @@ export const createCar = async (req: Request, res: Response) => {
                 gearbox_type:gearbox_type
             }
         })
-        res.status(200).json({message: "Car created successfully!"})
+        res.status(200).json(newCar)
     } catch (err: any) {
-        res.status(404).json({message: err.message})
+        res.status(500).json({ message: err.message })
     }
 }
 

@@ -1,11 +1,24 @@
-import { Link } from 'react-router-dom'
+import { data, Form, Link } from 'react-router-dom'
 import SearchBar from '../components/SearchBar.jsx'
 import CarGrid from '../components/CarGrid.jsx'
 import Button from '../components/Button.jsx'
-import { cars, advertisements } from '../mock/data.js'
+import {useState, useEffect} from 'react'
+
 
 function HomePage() {
-  const featuredCars = cars.slice(0, 6)
+  const [advertisements, setAdvertisements] = useState([]);
+  const [featuredCars, setFeaturedCars] = useState([]);
+  useEffect(() =>{
+    fetch("http://localhost:3000/api/cars")
+    .then(res => res.json())
+    .then(data => setFeaturedCars(data))
+    .catch(err => console.log(err))
+
+    fetch("http://localhost:3000/api/advertisements")
+    .then(res => res.json())
+    .then(data => setAdvertisements(data))
+    .catch(err => console.log(err))
+  }, [])
 
   return (
     <div className="bg-slate-900">
@@ -75,6 +88,7 @@ function HomePage() {
               View all cars →
             </Link>
           </div>
+          
           <CarGrid cars={featuredCars} advertisements={advertisements} />
         </div>
       </section>
