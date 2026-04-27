@@ -25,9 +25,9 @@ app.use(cookieParser());
 // app.use('/api/items', itemRoutes);
 app.use('/api/users', refreshToken, userRoutes);
 app.use("/api/cars", refreshToken, carRoutes);
-app.use("/api/advertisements", adsRoutes)
+app.use("/api/advertisements",refreshToken, adsRoutes)
 app.use("/api/rentals",refreshToken, rentalRoutes)
-app.use("/api/account",refreshToken, authRoutes)
+app.use("/api/account", authRoutes)
 
 // Global error handler (should be after routes)
 //app.use(errorHandler);

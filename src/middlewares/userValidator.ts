@@ -4,10 +4,11 @@ import { prisma } from '../lib/prisma.js';
 
 const refreshToken = async (req: any, res: Response, next: NextFunction) => {
     const accessToken = req.headers.authorization?.split(" ")[1]
-
+    console.log("Access token received: ", accessToken)
     try {
         const decoded = await jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
         console.log(decoded)
+        next()
         //res.status(200).json({ message: "Token is valid: ", decoded })
     } catch (err: any) {
         if (err.name === "TokenExpiredError") {
@@ -62,9 +63,11 @@ const refreshToken = async (req: any, res: Response, next: NextFunction) => {
 
             req.refreshToken = obj;
         }
+        else {
+            return res.status(401).json({ message: err.message })
+        }
 
-    }
-    next()
+    }    
 }
 
 
