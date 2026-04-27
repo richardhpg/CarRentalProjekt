@@ -9,7 +9,7 @@ datasource db {
 
 model advertisement {
   id             Int       @id @default(autoincrement())
-  car_id         Int
+  car_id         Int       @unique(map: "car_id")
   user_id        Int
   location       String?   @db.VarChar(150)
   status         String?   @db.VarChar(30)

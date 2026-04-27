@@ -34,6 +34,25 @@ export const getAdsById = async (req: Request, res: Response) => {
     }
 }
 
+export const getAdsByCarId = async (req: Request, res: Response) => {
+    try {
+        const id = Number(req.params.id)
+
+        const advertisement = await prisma.advertisement.findUnique({
+            where: {
+                car_id: id
+            },
+            include: {
+                cars: true,
+                users: true
+            }
+        })
+        res.status(200).json(advertisement)
+    } catch (err: any) {
+        res.status(500).json(err.message)
+    }
+}
+
 export const createAd = async (req: Request, res: Response) => {
     try {
         const {
