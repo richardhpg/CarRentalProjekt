@@ -45,6 +45,9 @@ export const deleteUser = async (req: Request, res: Response) => {
         res.status(500).json({ message: err.message })
     }
 }
+export const getMe = async(req:any, res: Response) => {
+    res.json(req.user)
+}
 
 export const updateUser = async (req: Request, res: Response) => {
     try {

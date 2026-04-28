@@ -6,13 +6,14 @@ import {
     deleteCar
 } from '../controllers/carController.js'
 import { Router } from "express"
+import refreshToken from '../middlewares/userValidator.js';
 
 const router = Router();
 
 router.get("/", getCars)
-router.post("/", createCar)
+router.post("/", refreshToken, createCar)
 router.get("/:id", getCarById)
-router.patch("/:id/update", updateCar)
-router.patch("/:id/delete", deleteCar)
+router.patch("/:id/update", refreshToken, updateCar)
+router.patch("/:id/delete", refreshToken, deleteCar)
 
 export default router;

@@ -14,7 +14,7 @@ import { ref } from 'node:process';
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:5173',
     credentials: true
 }));
 app.use(express.json());
@@ -24,8 +24,8 @@ app.use(cookieParser());
 
 // app.use('/api/items', itemRoutes);
 app.use('/api/users', refreshToken, userRoutes);
-app.use("/api/cars", refreshToken, carRoutes);
-app.use("/api/advertisements",refreshToken, adsRoutes)
+app.use("/api/cars", carRoutes);
+app.use("/api/advertisements", adsRoutes)
 app.use("/api/rentals",refreshToken, rentalRoutes)
 app.use("/api/account", authRoutes)
 

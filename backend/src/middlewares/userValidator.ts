@@ -4,10 +4,25 @@ import { prisma } from '../lib/prisma.js';
 
 const refreshToken = async (req: any, res: Response, next: NextFunction) => {
     const accessToken = req.headers.authorization?.split(" ")[1]
+    
     console.log("Access token received: ", accessToken)
     try {
         const decoded = await jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET)
-        console.log(decoded)
+
+        console.log(decoded.id)
+        const user = await prisma.users.findUnique({
+            where:{
+                id: Number(decoded.id)
+            },
+            select:{
+                id: true,
+                name: true,
+                contact_email: true,
+                contact_phoneNumber: true,
+            }
+        });
+        req.user = user;
+        console.log(user)
         next()
         //res.status(200).json({ message: "Token is valid: ", decoded })
     } catch (err: any) {
@@ -28,7 +43,7 @@ const refreshToken = async (req: any, res: Response, next: NextFunction) => {
                 return res.status(401).json({ message: "Unauthorized Access" })
             }
 
-            const newAccessToken = jwt.sign({ id: refreshToken.user_id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1s" })
+            const newAccessToken = jwt.sign({ id: refreshToken.user_id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "45m" })
 
             await prisma.refresh_token.update({
                 where: {
