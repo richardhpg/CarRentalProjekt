@@ -18,7 +18,9 @@ function CarGrid({ cars, advertisements, loading = false }) {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {cars.map((car) => {
-        const ad = advertisements.find((a) => a.car_id === car.id)
+        const ad = advertisements
+          ? advertisements.find((a) => a.car_id === car.id)
+          : null;
         return <CarCard key={car.id} car={car} advertisement={ad} />
       })}
     </div>

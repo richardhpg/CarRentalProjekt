@@ -1,142 +1,163 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
+import { useAuth } from "./AuthContext.jsx";
 
-const API_BASE_URL = 'http://localhost:3000'
-const NOTIFICATIONS_API_URL = `${API_BASE_URL}/api/notifications`
+const API_BASE_URL = "http://localhost:3000";
+const NOTIFICATIONS_API_URL = `${API_BASE_URL}/api/notifications`;
 const STATUS_STYLES = {
-  pending: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
-  accepted: 'bg-green-500/20 text-green-300 border-green-500/40',
-  denied: 'bg-red-500/20 text-red-300 border-red-500/40',
-}
-const SELLER_ACTIONS = ['pending', 'accepted', 'denied']
+  pending: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40",
+  accepted: "bg-green-500/20 text-green-300 border-green-500/40",
+  denied: "bg-red-500/20 text-red-300 border-red-500/40",
+};
+const SELLER_ACTIONS = ["pending", "accepted", "denied"];
 
 function NotificationCard({ userId }) {
-  const [buyerNotifications, setBuyerNotifications] = useState([])
-  const [sellerNotifications, setSellerNotifications] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [activeUpdateId, setActiveUpdateId] = useState(null)
+  const { accessToken } = useAuth();
+  const [buyerNotifications, setBuyerNotifications] = useState([]);
+  const [sellerNotifications, setSellerNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [activeUpdateId, setActiveUpdateId] = useState(null);
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     async function loadNotifications() {
       if (!userId) {
         if (isMounted) {
-          setBuyerNotifications([])
-          setSellerNotifications([])
-          setIsLoading(false)
+          setBuyerNotifications([]);
+          setSellerNotifications([]);
+          setIsLoading(false);
         }
-        return
+        return;
       }
 
       try {
-        setIsLoading(true)
-        setError('')
+        setIsLoading(true);
+        setError("");
 
-        const response = await fetch(`${NOTIFICATIONS_API_URL}?userId=${userId}`)
+        const response = await fetch(
+          `${NOTIFICATIONS_API_URL}?userId=${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            credentials: "include",
+          },
+        );
         if (!response.ok) {
-          throw new Error('Nem sikerult betolteni az ertesiteseket.')
+          throw new Error("Nem sikerult betolteni az ertesiteseket.");
         }
 
-        const data = await response.json()
+        const data = await response.json();
         if (isMounted) {
           setBuyerNotifications(
-            Array.isArray(data?.buyerNotifications) ? data.buyerNotifications : []
-          )
+            Array.isArray(data?.buyerNotifications)
+              ? data.buyerNotifications
+              : [],
+          );
           setSellerNotifications(
-            Array.isArray(data?.sellerNotifications) ? data.sellerNotifications : []
-          )
+            Array.isArray(data?.sellerNotifications)
+              ? data.sellerNotifications
+              : [],
+          );
         }
       } catch (err) {
         if (isMounted) {
           setError(
             err instanceof Error
               ? err.message
-              : 'Hiba tortent az ertesitesek lekerese kozben.'
-          )
+              : "Hiba tortent az ertesitesek lekerese kozben.",
+          );
         }
       } finally {
         if (isMounted) {
-          setIsLoading(false)
+          setIsLoading(false);
         }
       }
     }
 
-    loadNotifications()
+    loadNotifications();
 
     return () => {
-      isMounted = false
-    }
-  }, [userId])
+      isMounted = false;
+    };
+  }, [userId, accessToken]);
 
   const loadNotifications = async () => {
-    if (!userId) return
-    const response = await fetch(`${NOTIFICATIONS_API_URL}?userId=${userId}`)
+    if (!userId) return;
+    const response = await fetch(`${NOTIFICATIONS_API_URL}?userId=${userId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      credentials: "include",
+    });
     if (!response.ok) {
-      throw new Error('Nem sikerult frissiteni az ertesiteseket.')
+      throw new Error("Nem sikerult frissiteni az ertesiteseket.");
     }
-    const data = await response.json()
+    const data = await response.json();
     setBuyerNotifications(
-      data?.buyerNotifications ? data.buyerNotifications : []
-    )
+      data?.buyerNotifications ? data.buyerNotifications : [],
+    );
     setSellerNotifications(
-      data?.sellerNotifications ? data.sellerNotifications : []
-    )
-  }
+      data?.sellerNotifications ? data.sellerNotifications : [],
+    );
+  };
 
   const handleStatusUpdate = async (notificationId, status) => {
-    if (!userId) return
+    if (!userId) return;
 
     try {
-      setActiveUpdateId(notificationId)
-      setError('')
+      setActiveUpdateId(notificationId);
+      setError("");
 
       const response = await fetch(
         `${NOTIFICATIONS_API_URL}/${notificationId}/status`,
         {
-          method: 'PATCH',
+          method: "PATCH",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
+          credentials: "include",
           body: JSON.stringify({
-            userId,
             status,
           }),
-        }
-      )
+        },
+      );
 
       if (!response.ok) {
-        throw new Error('A status frissitese sikertelen.')
+        throw new Error("A status frissitese sikertelen.");
       }
 
-      await loadNotifications()
+      await loadNotifications();
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : 'Hiba tortent a status frissitese kozben.'
-      )
+          : "Hiba tortent a status frissitese kozben.",
+      );
     } finally {
-      setActiveUpdateId(null)
+      setActiveUpdateId(null);
     }
-  }
+  };
 
   const getStatusClassName = (status) =>
-    STATUS_STYLES[status] || 'bg-slate-700/40 text-slate-200 border-slate-600/60'
+    STATUS_STYLES[status] ||
+    "bg-slate-700/40 text-slate-200 border-slate-600/60";
 
   const getStatusText = (status) => {
-    if (status === 'pending') return 'pending'
-    if (status === 'accepted') return 'accepted'
-    if (status === 'denied') return 'denied'
-    return status
-  }
+    if (status === "pending") return "pending";
+    if (status === "accepted") return "accepted";
+    if (status === "denied") return "denied";
+    return status;
+  };
 
   if (isLoading) {
     return (
       <div className="rounded-xl border border-slate-700/80 bg-slate-900/40 p-3 text-sm text-slate-300">
         Ertesitesek betoltese...
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -144,7 +165,7 @@ function NotificationCard({ userId }) {
       <div className="rounded-xl border border-red-700/60 bg-red-950/30 p-3 text-sm text-red-200">
         {error}
       </div>
-    )
+    );
   }
 
   if (!buyerNotifications.length && !sellerNotifications.length) {
@@ -152,7 +173,7 @@ function NotificationCard({ userId }) {
       <div className="rounded-xl border border-slate-700/80 bg-slate-900/40 p-3 text-sm text-slate-300">
         Jelenleg nincs uj ertesites.
       </div>
-    )
+    );
   }
 
   return (
@@ -188,13 +209,13 @@ function NotificationCard({ userId }) {
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-slate-300">
-                  Telefon: {notification.seller.phone || '-'}
+                  Telefon: {notification.seller.phone || "-"}
                 </p>
                 <p className="text-xs text-slate-300">
-                  Email: {notification.seller.email || '-'}
+                  Email: {notification.seller.email || "-"}
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
-                  {notification.title || 'Ertesites'}
+                  {notification.title || "Ertesites"}
                 </p>
               </article>
             ))
@@ -233,20 +254,22 @@ function NotificationCard({ userId }) {
                   </span>
                 </div>
                 <p className="text-xs text-slate-300">
-                  Eletkor: {notification.buyer.age ?? '-'}
+                  Eletkor: {notification.buyer.age ?? "-"}
                 </p>
                 <p className="text-xs text-slate-300">
-                  Telefon: {notification.buyer.phone || '-'}
+                  Telefon: {notification.buyer.phone || "-"}
                 </p>
                 <p className="text-xs text-slate-300">
-                  Email: {notification.buyer.email || '-'}
+                  Email: {notification.buyer.email || "-"}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {SELLER_ACTIONS.map((status) => (
                     <button
                       key={status}
                       type="button"
-                      onClick={() => handleStatusUpdate(notification.id, status)}
+                      onClick={() =>
+                        handleStatusUpdate(notification.id, status)
+                      }
                       disabled={activeUpdateId === notification.id}
                       className={`rounded-full border px-3 py-1 text-xs font-medium transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 ${getStatusClassName(status)}`}
                     >
@@ -260,7 +283,7 @@ function NotificationCard({ userId }) {
         </div>
       </section>
     </div>
-  )
+  );
 }
 
-export default NotificationCard
+export default NotificationCard;

@@ -25,7 +25,11 @@
   "homepage": "https://github.com/richardhpg/CarRentalProjekt#readme",
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "@types/express-session": "^1.19.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.3.3",
     "dotenv": "^17.3.1",
     "eslint": "^10.0.2",
@@ -46,7 +50,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "experss": "^0.0.1-security",
-    "json-web-token": "^3.2.0",
+    "express-session": "^1.19.0",
     "jsonwebtoken": "^9.0.3"
   }
 }

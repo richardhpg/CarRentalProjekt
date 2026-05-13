@@ -41,7 +41,7 @@ export const getAdsByCarId = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id)
 
-        const advertisement = await prisma.advertisement.findUnique({
+        const advertisement = await prisma.advertisement.findFirst({
             where: {
                 car_id: id
             },

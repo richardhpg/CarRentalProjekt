@@ -1,24 +1,45 @@
-import { data, Form, Link } from 'react-router-dom'
-import SearchBar from '../components/SearchBar.jsx'
-import CarGrid from '../components/CarGrid.jsx'
-import Button from '../components/Button.jsx'
-import {useState, useEffect} from 'react'
-
+import { data, Form, Link } from "react-router-dom";
+import SearchBar from "../components/SearchBar.jsx";
+import CarGrid from "../components/CarGrid.jsx";
+import Button from "../components/Button.jsx";
+import { useState, useEffect } from "react";
+import { useAuth } from "../components/AuthContext.jsx";
 
 function HomePage() {
+  const { user, accessToken } = useAuth();
   const [advertisements, setAdvertisements] = useState([]);
   const [featuredCars, setFeaturedCars] = useState([]);
-  useEffect(() =>{
-    fetch("http://localhost:3000/api/cars")
-    .then(res => res.json())
-    .then(data => setFeaturedCars(data))
-    .catch(err => console.log(err))
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const carsRes = await fetch("http://localhost:3000/api/cars", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          credentials: "include",
+        });
+        if (carsRes.ok) {
+          const carsData = await carsRes.json();
+          setFeaturedCars(carsData ? carsData : []);
+        }
 
-    fetch("http://localhost:3000/api/advertisements")
-    .then(res => res.json())
-    .then(data => setAdvertisements(data))
-    .catch(err => console.log(err))
-  }, [])
+        const adsRes = await fetch("http://localhost:3000/api/advertisements", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          credentials: "include",
+        });
+        if (adsRes.ok) {
+          const adsData = await adsRes.json();
+          setAdvertisements(adsData ? adsData : []);
+        }
+      } catch (err) {
+        console.error("Error fetching homepage data:", err);
+      }
+    };
+
+    fetchData();
+  }, [accessToken]);
 
   return (
     <div className="bg-slate-900">
@@ -31,27 +52,42 @@ function HomePage() {
             </span>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
               Rent unique cars
-              <span className="block text-blue-400">
-                from people near you.
-              </span>
+              <span className="block text-blue-400">from people near you.</span>
             </h1>
             <p className="text-sm text-slate-300 md:text-base">
               CityRide connects you with trusted local owners so you can find
               the perfect car for every trip — from city runs to weekend
               getaways.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link to="/cars">
-                <Button>
-                  Rent a car
-                </Button>
-              </Link>
-              <Link to="/add-car">
-                <Button variant="secondary" className="border-slate-700 bg-slate-900/40 text-blue-600">
-                  List your car
-                </Button>
-              </Link>
-            </div>
+            {user ? (
+              <div className="flex flex-wrap items-center gap-3">
+                <Link to="/cars">
+                  <Button>Rent a car</Button>
+                </Link>
+                <Link to="/add-car">
+                  <Button
+                    variant="secondary"
+                    className="border-slate-700 bg-slate-900/40 text-blue-600"
+                  >
+                    List your car
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-3">
+                <Link to="/login">
+                  <Button>Sign In</Button>
+                </Link>
+                <Link to="/register">
+                  <Button
+                    variant="secondary"
+                    className="border-slate-700 bg-slate-900/40 text-white"
+                  >
+                    Create Account
+                  </Button>
+                </Link>
+              </div>
+            )}
             <div className="mt-4 flex flex-wrap gap-6 text-xs text-slate-300">
               <div>
                 <p className="font-semibold text-white">24/7 support</p>
@@ -88,13 +124,12 @@ function HomePage() {
               View all cars →
             </Link>
           </div>
-          
+
           <CarGrid cars={featuredCars} advertisements={advertisements} />
         </div>
       </section>
     </div>
-  )
+  );
 }
 
-export default HomePage
-
+export default HomePage;

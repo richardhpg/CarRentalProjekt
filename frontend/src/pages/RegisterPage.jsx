@@ -1,81 +1,88 @@
-import { Link, useNavigate } from 'react-router-dom'
-import Input from '../components/Input.jsx'
-import Button from '../components/Button.jsx'
-import { useState } from 'react'
-import { useAuth } from '../components/AuthContext.jsx'
+import { Link, useNavigate } from "react-router-dom";
+import Input from "../components/Input.jsx";
+import Button from "../components/Button.jsx";
+import { useState } from "react";
 
 function RegisterPage() {
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [phone, setPhone] = useState('')
-  const [age, setAge] = useState('')
-  const [errors, setErrors] = useState({})
-  const { register } = useAuth()
-  const navigate = useNavigate()
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [age, setAge] = useState("");
+  const [errors, setErrors] = useState({});
+  const navigate = useNavigate();
 
   const validateEmail = (value) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const newErrors = {}
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newErrors = {};
 
     if (!fullName.trim()) {
-      newErrors.fullName = 'Name is required'
+      newErrors.fullName = "Name is required";
     }
 
     if (!email.trim()) {
-      newErrors.email = 'Email is required'
+      newErrors.email = "Email is required";
     } else if (!validateEmail(email)) {
-      newErrors.email = 'Please enter a valid email'
+      newErrors.email = "Please enter a valid email";
     }
 
     if (!password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = "Password is required";
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (confirmPassword !== password) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     if (age && Number(age) < 18) {
-      newErrors.age = 'You must be at least 18'
+      newErrors.age = "You must be at least 18";
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
+      setErrors(newErrors);
+      return;
     }
 
     try {
-      register({
-        name: fullName,
-        email,
-        password,
-        phone,
-        age,
-      })
-      navigate('/')
-    } catch (error) {
-      if (error.message === 'Email already exists') {
-        setErrors({
-          ...newErrors,
-          email: 'An account with this email already exists',
-        })
-      } else {
-        setErrors({
-          ...newErrors,
-          general: 'Registration failed. Please try again.',
-        })
+      const response = await fetch(
+        "http://localhost:3000/api/account/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: fullName,
+            contact_email: email,
+            password,
+            contact_phoneNumber: phone,
+            age: Number(age),
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
       }
+
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration error:", error);
+      setErrors({
+        general: error.message || "Registration failed. Please try again.",
+      });
     }
-  }
+  };
 
   return (
     <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center bg-slate-50 px-4 py-10">
@@ -145,7 +152,7 @@ function RegisterPage() {
           </Button>
         </form>
         <p className="mt-4 text-center text-xs text-slate-500">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link
             to="/login"
             className="font-semibold text-blue-600 hover:text-blue-500"
@@ -155,8 +162,7 @@ function RegisterPage() {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
-export default RegisterPage
-
+export default RegisterPage;

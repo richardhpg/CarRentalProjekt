@@ -1,81 +1,86 @@
-import Input from '../components/Input.jsx'
-import Button from '../components/Button.jsx'
-import { useEffect, useState } from 'react'
-import { useAuth } from '../components/AuthContext.jsx'
-import { useNavigate } from 'react-router-dom'
+import Input from "../components/Input.jsx";
+import Button from "../components/Button.jsx";
+import { useEffect, useState } from "react";
+import { useAuth } from "../components/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 function AddCarPage() {
-
-  const [airchecked, setAirChecked] = useState(false)
-  const [availableChacked, setAvailableChecked] = useState(false)
-  const {user} = useAuth()
+  const [airchecked, setAirChecked] = useState(false);
+  const [availableChacked, setAvailableChecked] = useState(false);
+  const { user, accessToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/cars")
-    .then(res => res.json())
-    .then(data => console.log(data))
-  },[])
+    fetch("http://localhost:3000/api/cars", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data));
+  }, [accessToken]);
 
   const [formTemplate, setFormTemplate] = useState({
     user_id: user ? user.id : -1,
-    make: "",/**/
-    model: "",/**/
-    prod_year: 0, /**/
-    driving_licence: "",/**/
-    pictures: "",/**/
+    make: "" /**/,
+    model: "" /**/,
+    prod_year: 0 /**/,
+    driving_licence: "" /**/,
+    pictures: "" /**/,
     available: true,
-    trunk_space: 0, 
-    daily_rate: 0, /**/
-    deposit: 0,/**/
-    licence_plate: "",/**/
-    fuel_type: "",/**/
-    doors_number: 0, /**/
-    air_con: false,/**/
-    seats_number: 0,/**/
-    gearbox_type: "",/**/
-
+    trunk_space: 0,
+    daily_rate: 0 /**/,
+    deposit: 0 /**/,
+    licence_plate: "" /**/,
+    fuel_type: "" /**/,
+    doors_number: 0 /**/,
+    air_con: false /**/,
+    seats_number: 0 /**/,
+    gearbox_type: "" /**/,
   });
 
   const writeData = (e) => {
     setFormTemplate((prev) => ({
-      ...prev, [e.target.id] : e.target.value
-    }))
-  }
+      ...prev,
+      [e.target.id]: e.target.value,
+    }));
+  };
 
   const submit = async (e) => {
     if (!user) {
-      navigate('/login')
+      navigate("/login");
       return;
-     }
-     
-     console.log(formTemplate)
-     e.preventDefault();
-     if (!formTemplate.pictures) {
-      formTemplate.pictures ="car-placeholder.svg"
-     }
-      formTemplate.user_id = user.id
-      formTemplate.air_con = airchecked ? true : false 
-      formTemplate.available = availableChacked ? true : false
-      formTemplate.prod_year = parseInt(formTemplate.prod_year)
-      formTemplate.trunk_space = parseInt(formTemplate.trunk_space)
-      formTemplate.daily_rate = parseFloat(formTemplate.daily_rate)
-      formTemplate.deposit = parseFloat(formTemplate.deposit)
-      formTemplate.doors_number = parseInt(formTemplate.doors_number)
-      formTemplate.seats_number = parseInt(formTemplate.seats_number)
+    }
+
+    console.log(formTemplate);
+    e.preventDefault();
+    if (!formTemplate.pictures) {
+      formTemplate.pictures = "car-placeholder.svg";
+    }
+    formTemplate.user_id = user.id;
+    formTemplate.air_con = airchecked ? true : false;
+    formTemplate.available = availableChacked ? true : false;
+    formTemplate.prod_year = parseInt(formTemplate.prod_year);
+    formTemplate.trunk_space = parseInt(formTemplate.trunk_space);
+    formTemplate.daily_rate = parseFloat(formTemplate.daily_rate);
+    formTemplate.deposit = parseFloat(formTemplate.deposit);
+    formTemplate.doors_number = parseInt(formTemplate.doors_number);
+    formTemplate.seats_number = parseInt(formTemplate.seats_number);
 
     const request = await fetch("http://localhost:3000/api/cars/", {
       method: "POST",
       headers: {
-        "Content-type": "application/json"
+        "Content-type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify(formTemplate)
-    })
+      credentials: "include",
+      body: JSON.stringify(formTemplate),
+    });
 
-    const response = await request.json()
-    console.log(response.message)
-  }
-
+    const response = await request.json();
+    console.log(response.message);
+  };
 
   return (
     <div className="bg-slate-50 py-8">
@@ -113,7 +118,9 @@ function AddCarPage() {
               />
             </label>
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-slate-700">Production year</span>
+              <span className="font-medium text-slate-700">
+                Production year
+              </span>
               <input
                 onChange={writeData}
                 id="prod_year"
@@ -143,7 +150,9 @@ function AddCarPage() {
               />
             </label>
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-slate-700">Number of seats</span>
+              <span className="font-medium text-slate-700">
+                Number of seats
+              </span>
               <input
                 onChange={writeData}
                 id="seats_number"
@@ -173,7 +182,9 @@ function AddCarPage() {
               />
             </label>
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-slate-700">Driveing Licence (category)</span>
+              <span className="font-medium text-slate-700">
+                Driveing Licence (category)
+              </span>
               <input
                 onChange={writeData}
                 id="driving_licence"
@@ -188,7 +199,9 @@ function AddCarPage() {
               <input
                 onChange={writeData}
                 type="checkbox"
-                onClick={() => {setAirChecked(prev => !prev)}}
+                onClick={() => {
+                  setAirChecked((prev) => !prev);
+                }}
                 id="air_con"
                 className="h-5 w-5 rounded-full border-slate-200 bg-white text-blue-500 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
               />
@@ -208,7 +221,9 @@ function AddCarPage() {
           {/* Árazás/anyagi dolgok */}
           <div className="grid gap-4 md:grid-cols-3">
             <label className="flex flex-col gap-1 text-sm">
-              <span className="font-medium text-slate-700">Price per day (€)</span>
+              <span className="font-medium text-slate-700">
+                Price per day (€)
+              </span>
               <input
                 onChange={writeData}
                 id="daily_rate"
@@ -256,13 +271,14 @@ function AddCarPage() {
             >
               Cancel
             </button>
-            <Button onClick={submit} type="submit">Preview listing</Button>
+            <Button onClick={submit} type="submit">
+              Preview listing
+            </Button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
 
-export default AddCarPage
-
+export default AddCarPage;
