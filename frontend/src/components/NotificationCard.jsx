@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext.jsx";
 
 const API_BASE_URL = "http://localhost:3000";
-const NOTIFICATIONS_API_URL = `${API_BASE_URL}/api/notifications`;
+const NOTIFICATIONS_API_URL = `${"http://localhost:3000"}/api/notifications`;
 const STATUS_STYLES = {
   pending: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40",
   accepted: "bg-green-500/20 text-green-300 border-green-500/40",

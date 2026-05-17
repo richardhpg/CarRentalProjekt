@@ -9,6 +9,7 @@ import adsRoutes from "./routes/adsRoutes.js";
 import rentalRoutes from "./routes/rentalRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import refreshToken from "./middlewares/userValidator.js";
+import notificationRoutes from "./routes/notificationRoutes.js"
 
 const app = express();
 
@@ -35,7 +36,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Routes
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/account", authRoutes);
 app.use("/api/cars", carRoutes);
 app.use("/api/advertisements", adsRoutes);
@@ -45,7 +46,5 @@ app.use("/api", refreshToken);
 app.use("/api/users", userRoutes);
 app.use("/api/rentals", rentalRoutes);
 
-// Global error handler (should be after routes)
-//app.use(errorHandler);
 
 export default app;
