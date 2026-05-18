@@ -1,34 +1,94 @@
-import { createContext, useState, useContext, useEffect } from "react";
-import { useNavigate, useLocation, Outlet } from "react-router-dom";
+import { createContext, useEffect, useState } from "react";
 
-const AuthContext = createContext();
+export const AuthContext = createContext(null);
+
+let refreshInFlight = null;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const setAuth = (nextUser, nextAccessToken) => {
+    setUser(nextUser);
+    setAccessToken(nextAccessToken);
+  };
+
+  const clearAuth = () => {
+    setAuth(null, null);
+  };
+
   const login = (userData) => {
-    setUser(userData.user);
-    setAccessToken(userData.accessToken);
+    setAuth(userData?.user ?? null, userData?.accessToken ?? null);
+    setLoading(false);
   };
 
   const logout = async () => {
     try {
+      const headers = accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
+        : {};
+
       await fetch("http://localhost:3000/api/account/logout", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers,
         credentials: "include",
       });
     } catch (error) {
       console.error("Logout error:", error.message);
     } finally {
-      setUser(null);
-      setAccessToken(null);
+      clearAuth();
+      setLoading(false);
     }
   };
+
+  const refreshAuth = () => {
+    if (refreshInFlight) {
+      return refreshInFlight;
+    }
+
+    refreshInFlight = (async () => {
+      setLoading(true);
+
+      try {
+        const response = await fetch(
+          "http://localhost:3000/api/account/check-user",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          },
+        );
+
+        if (!response.ok) {
+          clearAuth();
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data?.checked) {
+          setAuth(data.user ?? null, data.accessToken ?? null);
+        } else {
+          clearAuth();
+        }
+      } catch (error) {
+        console.error("Auth check error:", error.message);
+        clearAuth();
+      } finally {
+        setLoading(false);
+        refreshInFlight = null;
+      }
+    })();
+
+    return refreshInFlight;
+  };
+
+  useEffect(() => {
+    refreshAuth();
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -41,74 +101,10 @@ export const AuthProvider = ({ children }) => {
         setLoading,
         login,
         logout,
+        refreshAuth,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const AuthChecker = () => {
-  const { user, setUser, setAccessToken, setLoading, loading } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const checkAuth = async () => {
-    try {
-      const response = await fetch(
-        "http://localhost:3000/api/account/check-user",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-        },
-      );
-
-      const data = await response.json();
-
-      if (data.checked) {
-        setUser(data.user);
-        setAccessToken(data.accessToken);
-        setLoading(false);
-      } else {
-        setUser(null);
-        setAccessToken(null);
-        setLoading(false);
-        if (!["/login", "/register"].includes(location.pathname)) {
-          navigate("/login");
-        }
-      }
-    } catch (error) {
-      console.error("Auth check error:", error.message);
-      setUser(null);
-      setAccessToken(null);
-      setLoading(false);
-      if (!["/login", "/register"].includes(location.pathname)) {
-        navigate("/login");
-      }
-    }
-  };
-
-  useEffect(() => {
-    checkAuth();
-  }, [location.pathname]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <span className="ml-3 text-lg font-medium">Betöltés...</span>
-      </div>
-    );
-  }
-
-  if (!user && !["/login", "/register"].includes(location.pathname)) {
-    return null;
-  }
-
-  return <Outlet />;
-};
-
-export const useAuth = () => useContext(AuthContext);

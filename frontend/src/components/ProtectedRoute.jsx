@@ -1,11 +1,16 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from './AuthContext.jsx';
+import { Navigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "./AuthContext.jsx";
 
 function ProtectedRoute({ children, allowedRoles }) {
-  const { user } = useAuth();
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) {
+    return null;
+  }
 
   if (!user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -16,4 +21,3 @@ function ProtectedRoute({ children, allowedRoles }) {
 }
 
 export default ProtectedRoute;
-

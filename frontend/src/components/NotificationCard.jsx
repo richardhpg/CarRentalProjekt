@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "./AuthContext.jsx";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "./AuthContext.jsx";
 
-const API_BASE_URL = "http://localhost:3000";
-const NOTIFICATIONS_API_URL = `${"http://localhost:3000"}/api/notifications`;
 const STATUS_STYLES = {
   pending: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40",
   accepted: "bg-green-500/20 text-green-300 border-green-500/40",
@@ -11,7 +9,7 @@ const STATUS_STYLES = {
 const SELLER_ACTIONS = ["pending", "accepted", "denied"];
 
 function NotificationCard({ userId }) {
-  const { accessToken } = useAuth();
+  const { accessToken } = useContext(AuthContext);
   const [buyerNotifications, setBuyerNotifications] = useState([]);
   const [sellerNotifications, setSellerNotifications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +34,7 @@ function NotificationCard({ userId }) {
         setError("");
 
         const response = await fetch(
-          `${NOTIFICATIONS_API_URL}?userId=${userId}`,
+          `http://localhost:3000/api/notifications?userId=${userId}`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -85,12 +83,15 @@ function NotificationCard({ userId }) {
 
   const loadNotifications = async () => {
     if (!userId) return;
-    const response = await fetch(`${NOTIFICATIONS_API_URL}?userId=${userId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
+    const response = await fetch(
+      `http://localhost:3000/api/notifications?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        credentials: "include",
       },
-      credentials: "include",
-    });
+    );
     if (!response.ok) {
       throw new Error("Nem sikerult frissiteni az ertesiteseket.");
     }
@@ -111,7 +112,7 @@ function NotificationCard({ userId }) {
       setError("");
 
       const response = await fetch(
-        `${NOTIFICATIONS_API_URL}/${notificationId}/status`,
+        `http://localhost:3000/api/notifications/${notificationId}/status`,
         {
           method: "PATCH",
           headers: {

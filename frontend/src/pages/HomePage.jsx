@@ -1,45 +1,57 @@
-import { data, Form, Link } from "react-router-dom";
-import SearchBar from "../components/SearchBar.jsx";
-import CarGrid from "../components/CarGrid.jsx";
-import Button from "../components/Button.jsx";
-import { useState, useEffect } from "react";
-import { useAuth } from "../components/AuthContext.jsx";
+import { Link } from 'react-router-dom'
+import SearchBar from '../components/SearchBar.jsx'
+import CarGrid from '../components/CarGrid.jsx'
+import Button from '../components/Button.jsx'
+import { useContext, useEffect, useState } from 'react'
+import { AuthContext } from '../components/AuthContext.jsx'
 
 function HomePage() {
-  const { user, accessToken } = useAuth();
-  const [advertisements, setAdvertisements] = useState([]);
-  const [featuredCars, setFeaturedCars] = useState([]);
+  const { user, accessToken } = useContext(AuthContext)
+  const [advertisements, setAdvertisements] = useState([])
+  const [featuredCars, setFeaturedCars] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
+      setError('')
+
       try {
-        const carsRes = await fetch("http://localhost:3000/api/cars", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          credentials: "include",
-        });
-        if (carsRes.ok) {
-          const carsData = await carsRes.json();
-          setFeaturedCars(carsData ? carsData : []);
+        const adsRes = await fetch('http://localhost:3000/api/advertisements', {
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+          credentials: 'include',
+        })
+
+        if (!adsRes.ok) {
+          throw new Error('Failed to load featured advertisements.')
         }
 
-        const adsRes = await fetch("http://localhost:3000/api/advertisements", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-          credentials: "include",
-        });
-        if (adsRes.ok) {
-          const adsData = await adsRes.json();
-          setAdvertisements(adsData ? adsData : []);
-        }
+        const adsData = await adsRes.json()
+        const validAds = Array.isArray(adsData)
+          ? adsData.filter((ad) => {
+              if (!ad?.cars) return false
+              if (ad.deleted === true) return false
+              if (typeof ad.status === 'string' && ad.status !== 'active') {
+                return false
+              }
+              return true
+            })
+          : []
+
+        setAdvertisements(validAds)
+        setFeaturedCars(validAds.map((ad) => ad.cars))
       } catch (err) {
-        console.error("Error fetching homepage data:", err);
+        setAdvertisements([])
+        setFeaturedCars([])
+        setError(err.message || 'Failed to load homepage data.')
+      } finally {
+        setLoading(false)
       }
-    };
+    }
 
-    fetchData();
-  }, [accessToken]);
+    fetchData()
+  }, [accessToken])
 
   return (
     <div className="bg-slate-900">
@@ -48,7 +60,7 @@ function HomePage() {
         <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 md:flex-row md:items-center">
           <div className="max-w-xl space-y-5">
             <span className="inline-flex items-center rounded-full bg-slate-800/80 px-3 py-1 text-xs font-medium text-slate-300 ring-1 ring-slate-700">
-              Új · Magánszemélytől magánszemélynek bérlés mód
+              New · Direct car sharing
             </span>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
               Rent unique cars
@@ -56,7 +68,7 @@ function HomePage() {
             </h1>
             <p className="text-sm text-slate-300 md:text-base">
               CityRide connects you with trusted local owners so you can find
-              the perfect car for every trip — from city runs to weekend
+              the perfect car for every trip - from city runs to weekend
               getaways.
             </p>
             {user ? (
@@ -125,11 +137,20 @@ function HomePage() {
             </Link>
           </div>
 
-          <CarGrid cars={featuredCars} advertisements={advertisements} />
+          {error && (
+            <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </p>
+          )}
+          <CarGrid
+            cars={featuredCars}
+            advertisements={advertisements}
+            loading={loading}
+          />
         </div>
       </section>
     </div>
-  );
+  )
 }
 
-export default HomePage;
+export default HomePage

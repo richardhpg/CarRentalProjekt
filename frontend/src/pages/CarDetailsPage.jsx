@@ -1,114 +1,187 @@
-import { useParams, useNavigate, data } from "react-router-dom";
-import { cars, advertisements, users } from "../mock/data.js";
-import Button from "../components/Button.jsx";
-import Modal from "../components/Modal.jsx";
-import { useEffect, useState } from "react";
-import { CAR_PLACEHOLDER_IMAGE } from "../utils/constants.js";
-import { useAuth } from "../components/AuthContext.jsx";
-
-const API_BASE_URL = "http://localhost:3000";
+import { useParams, useNavigate } from 'react-router-dom'
+import Button from '../components/Button.jsx'
+import Modal from '../components/Modal.jsx'
+import { useContext, useEffect, useState } from 'react'
+import { CAR_PLACEHOLDER_IMAGE } from '../utils/constants.js'
+import { AuthContext } from '../components/AuthContext.jsx'
 
 function CarDetailsPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { user, accessToken } = useAuth();
-  const [openModal, setOpenModal] = useState(false);
-  const [imgError, setImgError] = useState(false);
-  const [requestMessage, setRequestMessage] = useState("");
-  const [requestError, setRequestError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [car, setCar] = useState({});
-  const [advertisements, setAdvertisements] = useState([]);
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const { user, accessToken } = useContext(AuthContext)
+  const [openModal, setOpenModal] = useState(false)
+  const [imgError, setImgError] = useState(false)
+  const [requestMessage, setRequestMessage] = useState('')
+  const [requestError, setRequestError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [car, setCar] = useState(null)
+  const [ad, setAd] = useState(null)
+  const [owner, setOwner] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const fetchCarData = async () => {
+      setLoading(true)
+      setError('')
+
       try {
-        const res = await fetch(`http://localhost:3000/api/cars/${id}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+        const authHeaders = accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : {}
+
+        const carResponse = await fetch(`http://localhost:3000/api/cars/${id}`, {
+          headers: authHeaders,
+          credentials: 'include',
+        })
+
+        if (!carResponse.ok) {
+          throw new Error('Failed to load car details.')
+        }
+
+        const carData = await carResponse.json()
+        setCar(carData)
+
+        let adResponse = await fetch(
+          `http://localhost:3000/api/advertisements?carId=${id}`,
+          {
+            headers: authHeaders,
+            credentials: 'include',
           },
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setCar(data);
+        )
+
+        if (!adResponse.ok) {
+          adResponse = await fetch(
+            `http://localhost:3000/api/advertisements/car/${id}`,
+            {
+              headers: authHeaders,
+              credentials: 'include',
+            },
+          )
+        }
+
+        if (!adResponse.ok) {
+          throw new Error('Failed to load advertisement details.')
+        }
+
+        const adData = await adResponse.json()
+        const adList = Array.isArray(adData) ? adData : [adData]
+        const carAd =
+          adList.find((item) => item?.car_id === Number(id)) ?? adList[0] ?? null
+        setAd(carAd)
+
+        if (carData?.users) {
+          setOwner(carData.users)
+        } else if (carData?.user_id) {
+          const ownerResponse = await fetch(
+            `http://localhost:3000/api/users/${carData.user_id}`,
+            {
+              headers: authHeaders,
+              credentials: 'include',
+            },
+          )
+
+          if (!ownerResponse.ok) {
+            throw new Error('Failed to load owner information.')
+          }
+
+          const ownerData = await ownerResponse.json()
+          setOwner(ownerData)
+        } else {
+          setOwner(null)
         }
       } catch (err) {
-        console.error("Cars fetch err: ", err);
+        setCar(null)
+        setAd(null)
+        setOwner(null)
+        setError(err.message || 'Could not load car details.')
+      } finally {
+        setLoading(false)
       }
-    };
+    }
 
-    fetchCarData();
-  }, [id, accessToken]);
+    fetchCarData()
+  }, [id, accessToken])
 
-  //const car = cars.find((c) => c.id === Number(id))
-  const ad = advertisements.find((a) => a.car_id === Number(id));
-  const owner = car ? users.find((u) => u.id === car.user_id) : undefined;
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center bg-slate-50 px-4">
+        <p className="text-sm text-slate-600">Loading car details...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center bg-slate-50 px-4">
+        <p className="mb-3 text-sm font-medium text-red-600">{error}</p>
+        <Button onClick={() => navigate('/cars')}>Back to listings</Button>
+      </div>
+    )
+  }
 
   if (!car) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center bg-slate-50 px-4">
         <p className="mb-3 text-sm font-medium text-slate-800">Car not found</p>
-        <Button onClick={() => navigate("/cars")}>Back to listings</Button>
+        <Button onClick={() => navigate('/cars')}>Back to listings</Button>
       </div>
-    );
+    )
   }
 
-  const image = car.pictures?.[0];
-  const src = imgError || !image ? CAR_PLACEHOLDER_IMAGE : image;
+  const image = car.pictures?.[0]
+  const src = imgError || !image ? CAR_PLACEHOLDER_IMAGE : image
 
   const handleRentIntent = async () => {
     if (!user) {
-      setOpenModal(true);
-      return;
+      setOpenModal(true)
+      return
     }
 
     if (!ad?.id) {
-      setRequestError("Ehhez az autohoz nem talalhato aktiv hirdetes.");
-      setRequestMessage("");
-      return;
+      setRequestError('Ehhez az autohoz nem talalhato aktiv hirdetes.')
+      setRequestMessage('')
+      return
     }
 
     try {
-      setIsSubmitting(true);
-      setRequestError("");
-      setRequestMessage("");
+      setIsSubmitting(true)
+      setRequestError('')
+      setRequestMessage('')
 
-      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
-        method: "POST",
+      const response = await fetch('http://localhost:3000/api/notifications', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
-        credentials: "include",
+        credentials: 'include',
         body: JSON.stringify({
           buyer_id: user.id,
           advertisement_id: ad.id,
           title: `${user.name} berlesi szandekot kuldott a(z) ${car.make} ${car.model} autora.`,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(
-          data?.message || "A berlesi szandek kuldese sikertelen.",
-        );
+        throw new Error(data?.message || 'A berlesi szandek kuldese sikertelen.')
       }
 
       setRequestMessage(
-        "A berlesi szandek elkuldve. Varj az elado visszajelzesere.",
-      );
+        'A berlesi szandek elkuldve. Varj az elado visszajelzesere.',
+      )
     } catch (err) {
       setRequestError(
         err instanceof Error
           ? err.message
-          : "Hiba tortent a berlesi szandek kuldese kozben.",
-      );
+          : 'Hiba tortent a berlesi szandek kuldese kozben.',
+      )
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="bg-slate-50 py-8">
@@ -131,7 +204,7 @@ function CarDetailsPage() {
                   onError={() => setImgError(true)}
                 />
                 <div className="absolute bottom-4 left-4 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-slate-900 shadow">
-                  {ad?.location || "Budapest"}
+                  {ad?.location || 'Location unavailable'}
                 </div>
                 <div className="absolute bottom-4 right-4 rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white shadow">
                   €{car.daily_rate}/day
@@ -177,7 +250,7 @@ function CarDetailsPage() {
                   Air conditioning
                 </p>
                 <p className="text-sm font-semibold text-slate-900">
-                  {car.air_con ? "Yes" : "No"}
+                  {car.air_con ? 'Yes' : 'No'}
                 </p>
               </div>
               <div>
@@ -185,7 +258,7 @@ function CarDetailsPage() {
                   Max km / day
                 </p>
                 <p className="text-sm font-semibold text-slate-900">
-                  {ad?.max_km_per_day} km
+                  {ad?.max_km_per_day ?? '-'} km
                 </p>
               </div>
               <div>
@@ -202,7 +275,7 @@ function CarDetailsPage() {
               </h2>
               <p className="text-sm text-slate-600">
                 {ad?.description ||
-                  "Comfortable and well-equipped car, ideal for both city driving and longer trips."}
+                  'Comfortable and well-equipped car, ideal for both city driving and longer trips.'}
               </p>
             </div>
           </div>
@@ -231,7 +304,7 @@ function CarDetailsPage() {
                 onClick={handleRentIntent}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Kuldes..." : "Rent this car"}
+                {isSubmitting ? 'Kuldes...' : 'Rent this car'}
               </Button>
               {requestMessage ? (
                 <p className="mt-2 text-xs text-green-600">{requestMessage}</p>
@@ -248,17 +321,17 @@ function CarDetailsPage() {
                 </h2>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                    {owner.name
-                      .split(" ")
+                    {(owner.name || 'Owner')
+                      .split(' ')
                       .map((n) => n[0])
-                      .join("")}
+                      .join('')}
                   </div>
                   <div className="space-y-0.5">
                     <p className="text-sm font-semibold text-slate-900">
-                      {owner.name}
+                      {owner.name || 'Owner'}
                     </p>
                     <p className="text-xs text-slate-500">
-                      Age {owner.age} • Verified host
+                      Age {owner.age ?? '-'} • Verified host
                     </p>
                   </div>
                 </div>
@@ -286,8 +359,8 @@ function CarDetailsPage() {
             </button>
             <Button
               onClick={() => {
-                setOpenModal(false);
-                navigate("/login");
+                setOpenModal(false)
+                navigate('/login')
               }}
             >
               Continue to login
@@ -297,12 +370,11 @@ function CarDetailsPage() {
       >
         <p>
           To complete your booking, please log in or create an account. This
-          demo uses mock data only, but in a real product this step would
-          confirm your trip details and payment.
+          step confirms your trip request and sends it to the owner.
         </p>
       </Modal>
     </div>
-  );
+  )
 }
 
-export default CarDetailsPage;
+export default CarDetailsPage

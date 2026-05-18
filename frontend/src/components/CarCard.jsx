@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { CAR_PLACEHOLDER_IMAGE } from '../utils/constants.js'
-import { useAuth } from './AuthContext.jsx'
+import { AuthContext } from './AuthContext.jsx'
 
 function CarCard({ car, advertisement }) {
   const [imgError, setImgError] = useState(false)
   const image = car.pictures?.[0]
   const src = imgError || !image ? CAR_PLACEHOLDER_IMAGE : image
-  const { user } = useAuth()
+  const { user } = useContext(AuthContext)
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-1 hover:shadow-lg hover:ring-blue-100">
       <div className="relative h-40 w-full overflow-hidden bg-slate-100">
@@ -76,4 +76,3 @@ function CarCard({ car, advertisement }) {
 }
 
 export default CarCard
-

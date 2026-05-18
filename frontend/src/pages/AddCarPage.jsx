@@ -1,13 +1,13 @@
 import Input from "../components/Input.jsx";
 import Button from "../components/Button.jsx";
-import { useEffect, useState } from "react";
-import { useAuth } from "../components/AuthContext.jsx";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../components/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 function AddCarPage() {
   const [airchecked, setAirChecked] = useState(false);
   const [availableChacked, setAvailableChecked] = useState(false);
-  const { user, accessToken } = useAuth();
+  const { user, accessToken } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {

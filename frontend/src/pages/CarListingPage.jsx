@@ -1,16 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import CarGrid from '../components/CarGrid.jsx'
 import FilterSidebar from '../components/FilterSidebar.jsx'
-import { cars as allCars, advertisements } from '../mock/data.js'
+import { AuthContext } from '../components/AuthContext.jsx'
 
 function CarListingPage() {
+  const { accessToken } = useContext(AuthContext)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [allCars, setAllCars] = useState([])
+  const [advertisements, setAdvertisements] = useState([])
   const [priceRange, setPriceRange] = useState(120)
   const [fuelType, setFuelType] = useState()
   const [gearbox, setGearbox] = useState()
   const [seats, setSeats] = useState()
-   const [location, setLocation] = useState()
+  const [location, setLocation] = useState()
   const [searchParams, setSearchParams] = useSearchParams()
 
   useEffect(() => {
@@ -21,9 +25,49 @@ function CarListingPage() {
   }, [searchParams])
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 700)
-    return () => clearTimeout(t)
-  }, [])
+    const loadListingData = async () => {
+      setLoading(true)
+      setError('')
+
+      try {
+        const authHeaders = accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : {}
+
+        const adsResponse = await fetch('http://localhost:3000/api/advertisements', {
+          headers: authHeaders,
+          credentials: 'include',
+        })
+
+        if (!adsResponse.ok) {
+          throw new Error('Failed to load advertisements.')
+        }
+
+        const adsData = await adsResponse.json()
+        const validAds = Array.isArray(adsData)
+          ? adsData.filter((ad) => {
+              if (!ad?.cars) return false
+              if (ad.deleted === true) return false
+              if (typeof ad.status === 'string' && ad.status !== 'active') {
+                return false
+              }
+              return true
+            })
+          : []
+
+        setAdvertisements(validAds)
+        setAllCars(validAds.map((ad) => ad.cars))
+      } catch (err) {
+        setAllCars([])
+        setAdvertisements([])
+        setError(err.message || 'Could not load car listings.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadListingData()
+  }, [accessToken])
 
   useEffect(() => {
     if (location) {
@@ -41,28 +85,20 @@ function CarListingPage() {
     }
   }, [location, setSearchParams])
 
-  const adsByCarId = useMemo(() => {
-    // TODO: In the future, filtering will be done by the backend via API query params
-    const map = new Map()
-    advertisements.forEach((ad) => {
-      map.set(ad.car_id, ad)
-    })
-    return map
-  }, [])
+  const filteredAds = advertisements.filter((ad) => {
+    const car = ad.cars
+    if (!car) return false
 
-  const filteredCars = allCars.filter((car) => {
     if (car.daily_rate > priceRange) return false
     if (fuelType && car.fuel_type !== fuelType) return false
     if (gearbox && car.gearbox_type !== gearbox) return false
     if (seats && car.seats_number < seats) return false
 
-    if (location) {
-      const ad = adsByCarId.get(car.id)
-      if (!ad || ad.location !== location) return false
-    }
+    if (location && ad.location !== location) return false
 
     return true
   })
+  const filteredCars = filteredAds.map((ad) => ad.cars)
 
   return (
     <div className="bg-slate-50 py-8">
@@ -75,6 +111,11 @@ function CarListingPage() {
             Choose from a curated selection of local cars for every occasion.
           </p>
         </header>
+        {error && (
+          <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </p>
+        )}
         <div className="grid gap-6 md:grid-cols-[260px,minmax(0,1fr)]">
           <FilterSidebar
             priceRange={priceRange}
@@ -100,7 +141,7 @@ function CarListingPage() {
             </div>
             <CarGrid
               cars={filteredCars}
-              advertisements={advertisements}
+              advertisements={filteredAds}
               loading={loading}
             />
           </div>

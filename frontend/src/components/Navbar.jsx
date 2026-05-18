@@ -1,23 +1,25 @@
-import { Link, NavLink, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
-import { useAuth } from './AuthContext.jsx'
-import NotificationCard from './NotificationCard.jsx'
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "./AuthContext.jsx";
+import NotificationCard from "./NotificationCard.jsx";
 
 const navLinkBase =
-  'text-sm font-medium transition-colors hover:text-white/80 px-3 py-2 rounded-full'
+  "text-sm font-medium transition-colors hover:text-white/80 px-3 py-2 rounded-full";
 
 function Navbar() {
-  const location = useLocation()
-  const { user, logout } = useAuth()
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
-  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false)
+  const location = useLocation();
+  const { user, logout, loading } = useContext(AuthContext);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
 
   useEffect(() => {
-    setIsProfileMenuOpen(false)
-    setIsNotificationMenuOpen(false)
-  }, [location.pathname])
+    setIsProfileMenuOpen(false);
+    setIsNotificationMenuOpen(false);
+  }, [location.pathname]);
 
-  const userInitial = user?.name?.charAt(0)?.toUpperCase() ?? 'U'
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() ?? "U";
+  const isSignedOut = !loading && !user;
+  const isSignedIn = !loading && !!user;
 
   return (
     <header className="fixed inset-x-0 top-0 z-30 border-b border-slate-800/40 bg-slate-900/90 backdrop-blur">
@@ -25,23 +27,27 @@ function Navbar() {
         <Link to="/" className="flex items-center gap-2">
           <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-blue-600 text-white shadow-lg shadow-blue-500/30">
             <span className="text-lg font-semibold">
-              <img src="/images/Slogo-removebg.png" alt="Rentify" className="h-20 w-20" />
+              <img
+                src="/images/Slogo-removebg.png"
+                alt="Rentify"
+                className="h-20 w-20"
+              />
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white">
-              Rentify
+            <span className="text-sm font-semibold text-white">Rentify</span>
+            <span className="text-xs text-slate-400">
+              Magánszemélytől - Magánszemélynek
             </span>
-            <span className="text-xs text-slate-400">Magánszemélytől - Magánszemélynek</span>
           </div>
         </Link>
-
 
         <nav className="hidden items-center gap-1 md:flex">
           <NavLink
             to="/cars"
             className={({ isActive }) =>
-              `${navLinkBase} ${isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+              `${navLinkBase} ${
+                isActive ? "bg-slate-800 text-white" : "text-slate-300"
               }`
             }
           >
@@ -53,30 +59,30 @@ function Navbar() {
                 to="/dashboard"
                 className={({ isActive }) =>
                   `${navLinkBase} ${
-                    isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+                    isActive ? "bg-slate-800 text-white" : "text-slate-300"
                   }`
                 }
               >
                 Dashboard
               </NavLink>
-              {user.role === 'Admin' && (
+              {user.role === "Admin" && (
                 <NavLink
                   to="/admin"
                   className={({ isActive }) =>
                     `${navLinkBase} ${
-                      isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+                      isActive ? "bg-slate-800 text-white" : "text-slate-300"
                     }`
                   }
                 >
                   Admin Panel
                 </NavLink>
               )}
-              {user.role === 'Owner' && (
+              {user.role === "Owner" && (
                 <NavLink
                   to="/owner"
                   className={({ isActive }) =>
                     `${navLinkBase} ${
-                      isActive ? 'bg-slate-800 text-white' : 'text-slate-300'
+                      isActive ? "bg-slate-800 text-white" : "text-slate-300"
                     }`
                   }
                 >
@@ -85,25 +91,24 @@ function Navbar() {
               )}
             </>
           )}
-
         </nav>
 
         <div className="flex items-center gap-3">
-          {!user ? (
+          {isSignedOut ? (
             <Link
               to="/login"
               className="hidden text-sm font-medium text-slate-200 hover:text-white md:inline"
             >
               Log in
             </Link>
-          ) : (
+          ) : isSignedIn ? (
             <>
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => {
-                    setIsProfileMenuOpen(false)
-                    setIsNotificationMenuOpen((prev) => !prev)
+                    setIsProfileMenuOpen(false);
+                    setIsNotificationMenuOpen((prev) => !prev);
                   }}
                   className="inline-flex items-center justify-center rounded-full border border-slate-700/80 bg-slate-800/80 p-2 text-slate-200 transition hover:bg-slate-700/80"
                   aria-label="Ertesitesek"
@@ -171,8 +176,8 @@ function Navbar() {
                     <button
                       type="button"
                       onClick={() => {
-                        setIsProfileMenuOpen(false)
-                        logout()
+                        setIsProfileMenuOpen(false);
+                        logout();
                       }}
                       className="block w-full px-4 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700/70"
                     >
@@ -184,26 +189,32 @@ function Navbar() {
               <button
                 type="button"
                 onClick={() => {
-                  setIsProfileMenuOpen(false)
-                  logout()
+                  setIsProfileMenuOpen(false);
+                  logout();
                 }}
                 className="inline-flex rounded-full border border-slate-700/80 bg-slate-800/80 px-3 py-2 text-xs font-medium text-slate-200 transition hover:bg-slate-700/80 md:hidden"
               >
                 Kijelentkezes
               </button>
             </>
-          )}
+          ) : null}
 
-          <Link 
-          to = { !user ? "/login" : location.pathname === '/add-car' ? '/cars' : '/add-car' }
+          <Link
+            to={
+              !isSignedIn
+                ? "/login"
+                : location.pathname === "/add-car"
+                  ? "/cars"
+                  : "/add-car"
+            }
             className="inline-flex items-center justify-center rounded-full bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-blue-500/40 transition hover:-translate-y-0.5 hover:bg-blue-500 hover:shadow-lg"
           >
-            {location.pathname === '/add-car' ? 'Browse cars' : 'List your car'}
+            {location.pathname === "/add-car" ? "Browse cars" : "List your car"}
           </Link>
         </div>
       </div>
     </header>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

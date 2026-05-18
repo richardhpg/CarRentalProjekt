@@ -1,14 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input.jsx";
 import Button from "../components/Button.jsx";
-import { useState } from "react";
-import { useAuth } from "../components/AuthContext.jsx";
+import { useContext, useState } from "react";
+import { AuthContext } from "../components/AuthContext.jsx";
 
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const { login } = useAuth();
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {

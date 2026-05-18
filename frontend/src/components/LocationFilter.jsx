@@ -1,21 +1,54 @@
-import { useEffect, useMemo, useState } from 'react'
-import { advertisements } from '../mock/data.js'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import { AuthContext } from './AuthContext.jsx'
 
 function LocationFilter({ value, onChange }) {
+  const { accessToken } = useContext(AuthContext)
   const [query, setQuery] = useState(value || '')
   const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [advertisements, setAdvertisements] = useState([])
+
+  useEffect(() => {
+    const loadAdvertisements = async () => {
+      setLoading(true)
+      setError('')
+
+      try {
+        const response = await fetch('http://localhost:3000/api/advertisements', {
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+          credentials: 'include',
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to load locations.')
+        }
+
+        const data = await response.json()
+        setAdvertisements(Array.isArray(data) ? data : [])
+      } catch (err) {
+        setAdvertisements([])
+        setError(err.message || 'Could not load locations.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadAdvertisements()
+  }, [accessToken])
 
   const locations = useMemo(() => {
-    // TODO: Replace with API call to fetch available locations
     const unique = [
       ...new Set(
         advertisements
-          .map((ad) => ad.location)
+          .map((ad) =>
+            typeof ad.location === 'string' ? ad.location.trim() : '',
+          )
           .filter((loc) => typeof loc === 'string' && loc.trim().length > 0),
       ),
     ]
     return unique.sort((a, b) => a.localeCompare(b))
-  }, [])
+  }, [advertisements])
 
   const filteredLocations = useMemo(() => {
     if (!query.trim()) return locations
@@ -66,9 +99,14 @@ function LocationFilter({ value, onChange }) {
           ))}
         </div>
       )}
+      {loading && (
+        <p className="mt-1 text-[11px] text-slate-400">Loading locations...</p>
+      )}
+      {error && !loading && (
+        <p className="mt-1 text-[11px] text-red-600">{error}</p>
+      )}
     </div>
   )
 }
 
 export default LocationFilter
-

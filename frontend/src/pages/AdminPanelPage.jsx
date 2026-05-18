@@ -1,19 +1,80 @@
-import { useState } from 'react';
-import { users, cars, advertisements } from '../mock/data.js';
-import { useAuth } from '../components/AuthContext.jsx';
-import ProtectedRoute from '../components/ProtectedRoute.jsx';
+import { useContext, useEffect, useState } from 'react'
+import { AuthContext } from '../components/AuthContext.jsx'
+import ProtectedRoute from '../components/ProtectedRoute.jsx'
 
 function AdminPanelContent() {
-  const { user } = useAuth();
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const { user, accessToken } = useContext(AuthContext)
+  const [users, setUsers] = useState([])
+  const [cars, setCars] = useState([])
+  const [advertisements, setAdvertisements] = useState([])
+  const [selectedUserId, setSelectedUserId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const selectedUser = users.find((u) => u.id === selectedUserId) || null;
+  useEffect(() => {
+    const loadAdminData = async () => {
+      setLoading(true)
+      setError('')
+
+      try {
+        const authHeaders = accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : {}
+        const [usersResponse, carsResponse, adsResponse] = await Promise.all([
+          fetch('http://localhost:3000/api/users', {
+            headers: authHeaders,
+            credentials: 'include',
+          }),
+          fetch('http://localhost:3000/api/cars', {
+            headers: authHeaders,
+            credentials: 'include',
+          }),
+          fetch('http://localhost:3000/api/advertisements', {
+            headers: authHeaders,
+            credentials: 'include',
+          }),
+        ])
+
+        if (!usersResponse.ok) {
+          throw new Error('Failed to load users.')
+        }
+        if (!carsResponse.ok) {
+          throw new Error('Failed to load cars.')
+        }
+        if (!adsResponse.ok) {
+          throw new Error('Failed to load advertisements.')
+        }
+
+        const [usersData, carsData, adsData] = await Promise.all([
+          usersResponse.json(),
+          carsResponse.json(),
+          adsResponse.json(),
+        ])
+
+        const safeUsers = Array.isArray(usersData) ? usersData : []
+        setUsers(safeUsers)
+        setCars(Array.isArray(carsData) ? carsData : [])
+        setAdvertisements(Array.isArray(adsData) ? adsData : [])
+      } catch (err) {
+        setUsers([])
+        setCars([])
+        setAdvertisements([])
+        setError(err.message || 'Could not load admin data.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadAdminData()
+  }, [accessToken])
+
+  const selectedUser = users.find((u) => u.id === selectedUserId) || null
   const selectedUserCars = selectedUser
     ? cars.filter((c) => c.user_id === selectedUser.id)
-    : [];
+    : []
   const selectedUserAds = selectedUser
     ? advertisements.filter((a) => a.user_id === selectedUser.id)
-    : [];
+    : []
 
   return (
     <div className="bg-slate-50 py-8">
@@ -34,6 +95,16 @@ function AdminPanelContent() {
             </p>
           )}
         </div>
+        {loading && (
+          <p className="mb-4 rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600">
+            Loading admin data...
+          </p>
+        )}
+        {error && (
+          <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            {error}
+          </p>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-[2fr,3fr]">
           <section className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
@@ -65,7 +136,7 @@ function AdminPanelContent() {
                         selectedUserId === u.id ? 'text-slate-200' : 'text-slate-500'
                       }`}
                     >
-                      {u.email}
+                      {u.contact_email ?? u.email}
                     </p>
                   </div>
                   <span
@@ -107,7 +178,7 @@ function AdminPanelContent() {
                     </p>
                     <p>
                       <span className="font-semibold">Email:</span>{' '}
-                      {selectedUser.email}
+                      {selectedUser.contact_email ?? selectedUser.email}
                     </p>
                     <p>
                       <span className="font-semibold">Telefonszám:</span>{' '}
@@ -189,7 +260,7 @@ function AdminPanelContent() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function AdminPanelPage() {
@@ -197,8 +268,8 @@ function AdminPanelPage() {
     <ProtectedRoute allowedRoles={['Admin']}>
       <AdminPanelContent />
     </ProtectedRoute>
-  );
+  )
 }
 
-export default AdminPanelPage;
+export default AdminPanelPage
 
