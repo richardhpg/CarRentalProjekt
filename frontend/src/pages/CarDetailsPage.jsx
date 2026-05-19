@@ -137,38 +137,58 @@ function CarDetailsPage() {
       setOpenModal(true)
       return
     }
-
+  
     if (!ad?.id) {
       setRequestError('Ehhez az autohoz nem talalhato aktiv hirdetes.')
       setRequestMessage('')
       return
     }
-
+  
     try {
       setIsSubmitting(true)
       setRequestError('')
       setRequestMessage('')
-
-      const response = await fetch('http://localhost:3000/api/notifications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+  
+      const title =
+        user.name && car.make && car.model
+          ? `${user.name} berlesi szandekot kuldott a(z) ${car.make} ${car.model} autora.`
+          : 'Berlesi szandek'
+  
+      const response = await fetch(
+        'http://localhost:3000/api/notifications',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken
+              ? { Authorization: `Bearer ${accessToken}` }
+              : {}),
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            advertisement_id: ad.id,
+            title,
+          }),
         },
-        credentials: 'include',
-        body: JSON.stringify({
-          buyer_id: user.id,
-          advertisement_id: ad.id,
-          title: `${user.name} berlesi szandekot kuldott a(z) ${car.make} ${car.model} autora.`,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data?.message || 'A berlesi szandek kuldese sikertelen.')
+      )
+  
+      const text = await response.text()
+  
+      let data = {}
+  
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error(text)
       }
-
+  
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            'A berlesi szandek kuldese sikertelen.',
+        )
+      }
+  
       setRequestMessage(
         'A berlesi szandek elkuldve. Varj az elado visszajelzesere.',
       )

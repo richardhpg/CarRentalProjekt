@@ -41,6 +41,7 @@ app.use("/api/account", authRoutes);
 app.use("/api/cars", carRoutes);
 app.use("/api/advertisements", adsRoutes);
 
+// Minden további /api route auth-ot igényel
 app.use("/api", refreshToken);
 
 app.use("/api/users", userRoutes);

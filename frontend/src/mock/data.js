@@ -1,4 +1,4 @@
-export const users = [
+/* export const users = [
   {
     id: 1,
     name: 'Anna Kovacs',
@@ -535,3 +535,4 @@ export const rentals = [
   },
 ]
 
+ */

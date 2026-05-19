@@ -3,10 +3,19 @@ import { Request, Response } from "express";
 
 export const getNotifications = async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.query.userId as string) || (req as any).user?.id;
+    const idParam = req.params.id;
+    const userId = parseInt(Array.isArray(idParam) ? idParam[0] : idParam, 10);
 
-    
-    if ((req as any).user && (req as any).user.id !== userId) {
+    if (Number.isNaN(userId)) {
+      return res.status(400).json({ message: "Érvénytelen felhasználói azonosító." });
+    }
+
+    const authUserId = (req as any).user?.id;
+    if (!authUserId) {
+      return res.status(401).json({ message: "Bejelentkezés szükséges." });
+    }
+
+    if (authUserId !== userId) {
       return res.status(403).json({ message: "Nincs jogosultságod." });
     }
 
@@ -24,6 +33,7 @@ export const getNotifications = async (req: Request, res: Response) => {
         },
       },
     });
+
 
 
     const sellerRaw = await prisma.notifications.findMany({
@@ -71,6 +81,78 @@ export const getNotifications = async (req: Request, res: Response) => {
   }
 };
 
+export const createNotification = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const authUserId = (req as any).user?.id;
+
+    if (!authUserId) {
+      return res.status(401).json({
+        message: "Bejelentkezés szükséges.",
+      });
+    }
+
+    const { advertisement_id, title } = req.body ?? {};
+
+    const advertisementId = Number(advertisement_id);
+
+    if (!Number.isInteger(advertisementId)) {
+      return res.status(400).json({
+        message: "Érvénytelen hirdetés azonosító.",
+      });
+    }
+
+    if (typeof title !== "string" || !title.trim()) {
+      return res.status(400).json({
+        message: "A bérlési szándék szövege kötelező.",
+      });
+    }
+
+    const advertisement = await prisma.advertisement.findUnique({
+      where: { id: advertisementId },
+      select: {
+        user_id: true,
+        deleted: true,
+      },
+    });
+
+    if (!advertisement || advertisement.deleted) {
+      return res.status(404).json({
+        message: "Hirdetés nem található.",
+      });
+    }
+
+    if (advertisement.user_id === authUserId) {
+      return res.status(400).json({
+        message:
+          "Nem küldhetsz bérlési szándékot a saját hirdetésedre.",
+      });
+    }
+
+    const safeTitle = title.trim().slice(0, 80);
+
+    const notification = await prisma.notifications.create({
+      data: {
+        seller_id: advertisement.user_id,
+        buyer_id: authUserId,
+        advertisement_id: advertisementId,
+        status: "pending",
+        title: safeTitle,
+      },
+    });
+
+    return res.status(201).json(notification);
+  } catch (err) {
+    console.error("Create notification error:", err);
+
+    return res.status(500).json({
+      message: "Hiba az értesítés létrehozása során.",
+    });
+  }
+};
+
 export const updateNotificationStatus = async (req: Request, res: Response) => {
   try {
     const idParam = req.params.id;
@@ -78,7 +160,11 @@ export const updateNotificationStatus = async (req: Request, res: Response) => {
     const { status } = req.body;
     const userId = (req as any).user?.id;
 
-    if (!["pending", "accepted", "denied"].includes(status)) {
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ message: "Érvénytelen értesítés azonosító." });
+    }
+
+    if (!["accepted", "denied"].includes(status)) {
       return res.status(400).json({ message: "Érvénytelen státusz." });
     }
 
